@@ -39,7 +39,7 @@ class Tibanna
      * The mocked now instance to test Carbonite itself with fake time.
      * Because nothing is real.
      *
-     * @var Carbon|CarbonImmutable|null
+     * @var Closure|Carbon|CarbonImmutable|null
      */
     private $testNow = null;
 
@@ -58,11 +58,11 @@ class Tibanna
 
         $fakeNow = $this->moment->copy();
 
-        if ($this->speed === 0) {
+        if (!$this->speed) {
             return $fakeNow;
         }
 
-        $microseconds = $this->lastFrozenAt->diffInMicroseconds($realNow, true);
+        $microseconds = $realNow->diffInMicroseconds($this->lastFrozenAt, true);
 
         return $fakeNow->addMicroseconds(round($microseconds * $this->speed));
     }
@@ -81,6 +81,16 @@ class Tibanna
         $this->lastFrozenAt = Carbon::now();
 
         $getNow = function (CarbonInterface $realNow) {
+            $testNow = $this->testNow;
+
+            if ($testNow) {
+                if ($testNow instanceof Closure) {
+                    $testNow = $testNow($realNow);
+                }
+
+                $realNow = $testNow;
+            }
+
             return $this->fake($realNow);
         };
 
@@ -197,7 +207,8 @@ class Tibanna
     {
         $this->moment = null;
         $this->speed = 1;
-        $this->releaseCarbonTestNow();
+        Carbon::setTestNow($this->testNow);
+        CarbonImmutable::setTestNow($this->testNow);
     }
 
     /**
@@ -211,21 +222,21 @@ class Tibanna
      * probably won't need this methods in your own code and tests, you more likely need the
      * freeze() or jumpTo() method.
      *
-     * @param CarbonInterface|Closure $testNow
+     * @param string|CarbonInterface|Closure $testNow
      */
     public function mock($testNow): void
     {
-        $this->testNow = $testNow;
-        $this->releaseCarbonTestNow();
-    }
+        if ($testNow instanceof Closure) {
+            $this->testNow = function (CarbonInterface $realNow) use ($testNow) {
+                $fakeNow = $testNow($realNow);
 
-    /**
-     * Set Carbon and CarbonImmutable testNow to current mocked now, or release them if it's null.
-     */
-    private function releaseCarbonTestNow(): void
-    {
-        Carbon::setTestNow($this->testNow);
-        CarbonImmutable::setTestNow($this->testNow);
+                return $fakeNow instanceof CarbonInterface ? $fakeNow : Carbon::make($fakeNow);
+            };
+
+            return;
+        }
+
+        $this->testNow = $testNow instanceof CarbonInterface ? $testNow : Carbon::make($testNow);
     }
 
     /**

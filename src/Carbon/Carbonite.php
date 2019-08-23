@@ -27,8 +27,6 @@ class Carbonite
      */
     private static function tibanna(): Tibanna
     {
-        self::$tibanna = null;
-
         if (self::$tibanna === null) {
             self::$tibanna = new Tibanna();
         }
@@ -172,7 +170,7 @@ class Carbonite
      * probably won't need this methods in your own code and tests, you more likely need the
      * freeze() or jumpTo() method.
      *
-     * @param CarbonInterface|Closure $testNow
+     * @param string|CarbonInterface|Closure $testNow
      */
     public static function mock($testNow): void
     {
