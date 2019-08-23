@@ -92,10 +92,10 @@ class Tibanna
     /**
      * Set the speed factor of the fake timeline and return the new speed.
      * If $speed is null, it just returns the current speed.
-     *  - 0 = Frozen time
-     *  - 0.5 = Time passes twice more slowly
-     *  - 1 = Real life speed
-     *  - 2 = Time passes twice faster
+     *  - 0 = Frozen time;
+     *  - 0.5 = Time passes twice more slowly;
+     *  - 1 = Real life speed;
+     *  - 2 = Time passes twice faster.
      *
      * @param float|null $speed
      *
