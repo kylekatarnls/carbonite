@@ -1,0 +1,33 @@
+{
+  "name": "kylekatarnls/carbonite",
+  "description": "Freeze, accelerate, slow down time and many more with Carbon.",
+  "type": "library",
+  "require": {
+    "php": "^7.2",
+    "nesbot/carbon": "^2.24.0-beta.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^8.3.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "KyleKatarn",
+      "email": "carbon@selfbuild.fr"
+    }
+  ],
+  "minimum-stability": "dev",
+  "scripts": {
+    "test": "phpunit"
+  }
+}

@@ -1,0 +1,46 @@
+language: php
+
+cache:
+  directories:
+  - $HOME/.composer/cache
+
+matrix:
+  fast_finish: true
+  include:
+  - php: '7.2'
+    env: setup=lowest
+  - php: '7.2'
+  - php: '7.3'
+    env: setup=lowest
+  - php: '7.3'
+    env: coverage=true
+  - php: 7.4snapshot
+    env: setup=lowest
+  - php: 7.4snapshot
+
+before_install:
+- travis_retry composer self-update
+
+before_script:
+- curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+- chmod +x ./cc-test-reporter
+- ./cc-test-reporter before-build
+
+install:
+- if [[ $setup = 'stable' ]]; then travis_retry composer update --prefer-dist --no-interaction --dev; fi
+- if [[ $setup = 'lowest' ]]; then travis_retry composer update --prefer-dist --no-interaction --prefer-lowest --dev; fi
+
+script:
+- vendor/bin/phpunit --verbose --coverage-text --coverage-clover=clover.xml
+
+after_script:
+- if [[ $coverage = 'true' ]]; then ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT; fi
+
+after_success:
+- if [[ $coverage = 'true' ]]; then bash <(curl -s https://codecov.io/bash); fi
+
+env:
+  global:
+  - coverage=false
+  - setup=stable
+  - CC_TEST_REPORTER_ID=f30b85a3fcfe1123f162d9731445f8df3be1f1dcb119b36c08c0d695660cc4f1
