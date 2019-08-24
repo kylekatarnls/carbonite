@@ -37,27 +37,27 @@ function scanEpoch() {
         case 1946:
             return 'War is over';
         case 2255:
-            return 'Discovery is flying!';
+            return 'The Discovery is flying!';
     }
 }
 
 Carbonite::freeze('1944-05-05');
 
-echo scanEpoch(); // WW2
+echo scanEpoch(); // output: WW2
 
 Carbonite::elapse('2 years');
 
-echo scanEpoch(); // War is over
+echo scanEpoch(); // output: War is over
 
 Carbonite::jumpTo('2255-01-01 00:00:00');
 
-echo scanEpoch(); // Discovery is flying!
+echo scanEpoch(); // output: The Discovery is flying!
 
 Carbonite::speed(3); // Times passes now thrice faster
 sleep(15); // If 15 seconds passes in the real time
 
 // Then 45 seconds passed in our fake timeline:
-echo Carbon::now(); // 2255-01-01 00:00:45
+echo Carbon::now(); // output: 2255-01-01 00:00:45
 ```
 
 You can also use `CarbonImmutable`, both will be synchronized.

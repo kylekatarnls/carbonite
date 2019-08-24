@@ -25,7 +25,7 @@ class CarboniteTest extends TestCase
      * @covers ::tibanna
      * @covers \Carbon\Carbonite\Tibanna::mock
      */
-    public function testMock()
+    public function testMock(): void
     {
         Carbonite::mock(Carbon::parse('2000-01-01'));
         Carbonite::release();
@@ -37,7 +37,7 @@ class CarboniteTest extends TestCase
 
         self::assertSame('2012-11-05 00:00:00', Carbon::now()->format('Y-m-d H:i:s'));
 
-        Carbonite::mock(function () {
+        Carbonite::mock(function (): string {
             return '2012-11-05 20:02:20.020202';
         });
         Carbonite::release();
@@ -60,7 +60,7 @@ class CarboniteTest extends TestCase
      * @covers ::fake
      * @covers \Carbon\Carbonite\Tibanna::fake
      */
-    public function testFake()
+    public function testFake(): void
     {
         $realNow = Carbon::instance(new DateTimeImmutable('now'));
         $fakeNow = Carbonite::fake($realNow);
@@ -84,7 +84,7 @@ class CarboniteTest extends TestCase
      * @covers ::freeze
      * @covers \Carbon\Carbonite\Tibanna::freeze
      */
-    public function testFreeze()
+    public function testFreeze(): void
     {
         Carbonite::mock('2019-08-24 10:25:12.110402');
         Carbonite::freeze('2042-06-25 03:50:34.665523');
@@ -111,7 +111,7 @@ class CarboniteTest extends TestCase
         self::assertSame('2034-02-05 17:24:46.265523', Carbon::now()->format('Y-m-d H:i:s.u'));
 
         $day = 1;
-        Carbonite::mock(function () use (&$day) {
+        Carbonite::mock(function () use (&$day): string {
             return '2019-08-'.$day;
         });
         Carbonite::freeze('1789-07-14', 3);
@@ -135,11 +135,11 @@ class CarboniteTest extends TestCase
      * @covers ::speed
      * @covers \Carbon\Carbonite\Tibanna::speed
      */
-    public function testSpeed()
+    public function testSpeed(): void
     {
         $seconds = 0;
 
-        Carbonite::mock(function () use (&$seconds) {
+        Carbonite::mock(function () use (&$seconds): Carbon {
             return Carbon::parse('2019-08-01')->addSeconds($seconds);
         });
         Carbonite::release();
@@ -189,7 +189,7 @@ class CarboniteTest extends TestCase
      * @covers ::accelerate
      * @covers \Carbon\Carbonite\Tibanna::accelerate
      */
-    public function testAccelerate()
+    public function testAccelerate(): void
     {
         Carbonite::speed(0.0);
         Carbonite::accelerate(50.0);
@@ -214,7 +214,7 @@ class CarboniteTest extends TestCase
      * @covers ::decelerate
      * @covers \Carbon\Carbonite\Tibanna::decelerate
      */
-    public function testDecelerate()
+    public function testDecelerate(): void
     {
         Carbonite::speed(0.0);
         Carbonite::decelerate(50.0);
@@ -239,7 +239,7 @@ class CarboniteTest extends TestCase
      * @covers ::unfreeze
      * @covers \Carbon\Carbonite\Tibanna::unfreeze
      */
-    public function testUnfreeze()
+    public function testUnfreeze(): void
     {
         Carbonite::freeze();
 
@@ -255,7 +255,7 @@ class CarboniteTest extends TestCase
      * @covers \Carbon\Carbonite\Tibanna::unfreeze
      * @covers \Carbon\Carbonite\UnfrozenTimeException::<public>
      */
-    public function testUnfreezeException()
+    public function testUnfreezeException(): void
     {
         self::expectException(UnfrozenTimeException::class);
 
@@ -268,7 +268,7 @@ class CarboniteTest extends TestCase
      * @covers ::jumpTo
      * @covers \Carbon\Carbonite\Tibanna::jumpTo
      */
-    public function testJumpTo()
+    public function testJumpTo(): void
     {
         Carbonite::speed(2.0);
         Carbonite::jumpTo('2019-08-24');
@@ -287,7 +287,7 @@ class CarboniteTest extends TestCase
      * @covers \Carbon\Carbonite\Tibanna::elapse
      * @covers \Carbon\Carbonite\Tibanna::callDurationMethodAndJump
      */
-    public function testElapse()
+    public function testElapse(): void
     {
         Carbonite::speed(2.0);
         Carbonite::jumpTo('2019-08-12');
@@ -306,7 +306,7 @@ class CarboniteTest extends TestCase
         self::assertSame(3.0, Carbonite::speed());
 
         $realSeconds = 0;
-        Carbonite::mock(function () use (&$realSeconds) {
+        Carbonite::mock(function () use (&$realSeconds): Carbon {
             return Carbon::parse('2019-08-01')->addSeconds($realSeconds);
         });
         Carbonite::release();
@@ -322,7 +322,7 @@ class CarboniteTest extends TestCase
      * @covers ::rewind
      * @covers \Carbon\Carbonite\Tibanna::rewind
      */
-    public function testRewind()
+    public function testRewind(): void
     {
         Carbonite::speed(2.0);
         Carbonite::jumpTo('2019-08-12');
@@ -341,7 +341,7 @@ class CarboniteTest extends TestCase
         self::assertSame(3.0, Carbonite::speed());
 
         $realSeconds = 0;
-        Carbonite::mock(function () use (&$realSeconds) {
+        Carbonite::mock(function () use (&$realSeconds): Carbon {
             return Carbon::parse('2019-08-01')->addSeconds($realSeconds);
         });
         Carbonite::release();
@@ -357,7 +357,7 @@ class CarboniteTest extends TestCase
      * @covers ::release
      * @covers \Carbon\Carbonite\Tibanna::release
      */
-    public function testRelease()
+    public function testRelease(): void
     {
         Carbonite::freeze('2019-08-24');
 
