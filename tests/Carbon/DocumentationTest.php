@@ -19,8 +19,8 @@ class DocumentationTest extends TestCase
         Carbonite::mock(null);
         Carbonite::release();
 
-        $code = str_replace('echo ', 'echo "\n", ', $example);
-        $code = preg_replace('/^<\?php/', '', $code);
+        $code = (string) str_replace('echo ', 'echo "\n", ', $example);
+        $code = (string) preg_replace('/^<\?php/', '', $code);
         $imports = [
             Carbonite::class,
             Carbon::class,
@@ -35,10 +35,10 @@ class DocumentationTest extends TestCase
             }
         }
 
-        $code = preg_replace('#^//.* [Nn]ow i(?:t\')?s (.*)$#m', 'Carbonite::mock("$1"); Carbon::hasTestNow() || Carbon::setTestNow(Carbon::parse("$1"));', $code);
+        $code = (string) preg_replace('#^//.* [Nn]ow i(?:t\')?s (.*)$#m', 'Carbonite::mock("$1"); Carbon::hasTestNow() || Carbon::setTestNow(Carbon::parse("$1"));', $code);
         $needMock = false;
 
-        $code = preg_replace_callback('#^(u)?sleep\((.+)\);#m', function ($matches) use (&$needMock) {
+        $code = (string) preg_replace_callback('#^(u)?sleep\((.+)\);#m', function ($matches) use (&$needMock) {
             [, $u, $pause] = $matches;
             $needMock = true;
 
@@ -57,7 +57,11 @@ class DocumentationTest extends TestCase
         }, $code);
 
         if ($needMock) {
-            Carbonite::mock('2000-01-01'); Carbon::hasTestNow() || Carbon::setTestNow(Carbon::parse('2000-01-01'));
+            Carbonite::mock('2000-01-01');
+
+            if (!Carbon::hasTestNow()) {
+                Carbon::setTestNow(Carbon::parse('2000-01-01'));
+            }
         }
 
         $output = [];
