@@ -17,14 +17,14 @@ class Tibanna
     /**
      * Current base moment of the fake timeline.
      *
-     * @var Carbon|CarbonImmutable|null
+     * @var CarbonInterface|null
      */
     private $moment = null;
 
     /**
      * Last real moment when the time speed changed.
      *
-     * @var Carbon|CarbonImmutable|null
+     * @var CarbonInterface|null
      */
     private $lastFrozenAt = null;
 
@@ -39,7 +39,7 @@ class Tibanna
      * The mocked now instance to test Carbonite itself with fake time.
      * Because nothing is real.
      *
-     * @var Closure|Carbon|CarbonImmutable|null
+     * @var Closure|CarbonInterface|null
      */
     private $testNow = null;
 
@@ -48,9 +48,9 @@ class Tibanna
      *
      * @param CarbonInterface $realNow
      *
-     * @return Carbon|CarbonImmutable
+     * @return CarbonInterface
      */
-    public function fake(CarbonInterface $realNow)
+    public function fake(CarbonInterface $realNow): CarbonInterface
     {
         if (!$this->moment) {
             $this->speed(1);
@@ -64,17 +64,17 @@ class Tibanna
 
         $microseconds = $realNow->diffInMicroseconds($this->lastFrozenAt, true);
 
-        return $fakeNow->addMicroseconds(round($microseconds * $this->speed));
+        return $fakeNow->addMicroseconds((int) round($microseconds * $this->speed));
     }
 
     /**
      * Freeze the time to a given moment (now by default).
      * As a second optional parameter you can choose the new time speed after the freeze (0 by default).
      *
-     * @param string|Carbon|CarbonImmutable|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $toMoment
-     * @param float                                                                                               $speed
+     * @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $toMoment
+     * @param float                                                                                        $speed
      */
-    public function freeze($toMoment = 'now', float $speed = 0): void
+    public function freeze($toMoment = 'now', float $speed = 0.0): void
     {
         $this->moment = Carbon::now()->carbonize($toMoment);
         Carbon::setTestNow($this->testNow);
@@ -124,7 +124,7 @@ class Tibanna
      * Speed up the time in the fake timeline by the given factor.
      * Returns the new speed.
      *
-     * @param float|null $factor
+     * @param float $factor
      *
      * @return float
      */
@@ -137,7 +137,7 @@ class Tibanna
      * Slow down the time in the fake timeline by the given factor.
      * Returns the new speed.
      *
-     * @param float|null $factor
+     * @param float $factor
      *
      * @return float
      */
@@ -164,8 +164,8 @@ class Tibanna
      * Jump to a given moment in the fake timeline keeping the current speed.
      * A second parameter can be passed to change the speed after the jump.
      *
-     * @param string|Carbon|CarbonImmutable|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $moment
-     * @param float                                                                                               $speed
+     * @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $moment
+     * @param float                                                                                        $speed
      */
     public function jumpTo($moment, float $speed = null): void
     {
@@ -192,8 +192,8 @@ class Tibanna
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
      * or a interval (DateInterval/CarbonInterval).
      *
-     * @param string|float|CarbonInterval|DateInterval $duration
-     * @param float                                    $speed
+     * @param string|int|float|CarbonInterval|DateInterval $duration
+     * @param float                                        $speed
      */
     public function rewind($duration, float $speed = null): void
     {
@@ -222,7 +222,7 @@ class Tibanna
      * probably won't need this methods in your own code and tests, you more likely need the
      * freeze() or jumpTo() method.
      *
-     * @param string|CarbonInterface|Closure $testNow
+     * @param string|CarbonInterface|Closure|null $testNow
      */
     public function mock($testNow): void
     {
@@ -242,9 +242,9 @@ class Tibanna
     /**
      * Call a duration method and jump to resulted date.
      *
-     * @param string                                   $method
-     * @param string|float|CarbonInterval|DateInterval $duration
-     * @param float                                    $speed
+     * @param string                                       $method
+     * @param string|int|float|CarbonInterval|DateInterval $duration
+     * @param float                                        $speed
      */
     private function callDurationMethodAndJump(string $method, $duration, float $speed = null): void
     {

@@ -45,7 +45,13 @@ class CarboniteTest extends TestCase
         Carbonite::mock(null);
         Carbonite::release();
 
-        self::assertLessThan(1, abs(Carbon::now()->format('U.u') - (new DateTimeImmutable('now'))->format('U.u')));
+        $mock = Carbon::now();
+        $real = new DateTimeImmutable('now');
+
+        $mock = (float) $mock->format('U.u');
+        $real = (float) $real->format('U.u');
+
+        self::assertLessThan(1, abs($mock - $real));
     }
 
     /**
@@ -57,8 +63,11 @@ class CarboniteTest extends TestCase
         $realNow = Carbon::instance(new DateTimeImmutable('now'));
         $fakeNow = Carbonite::fake($realNow);
 
+        $mock = (float) $fakeNow->format('U.u');
+        $real = (float) $realNow->format('U.u');
+
         self::assertGreaterThan($realNow->format('Y-m-d H:i:s.u'), $fakeNow->format('Y-m-d H:i:s.u'));
-        self::assertLessThan(1, abs($fakeNow->format('U.u') - $realNow->format('U.u')));
+        self::assertLessThan(1, abs($mock - $real));
 
         Carbonite::mock($realNow);
         Carbonite::freeze($realNow);
@@ -118,5 +127,59 @@ class CarboniteTest extends TestCase
         $day--;
 
         self::assertSame('1789-07-20', Carbon::now()->format('Y-m-d'));
+    }
+
+    /**
+     * @covers ::speed
+     * @covers \Carbon\Carbonite\Tibanna::speed
+     */
+    public function testSpeed()
+    {
+        $seconds = 0;
+
+        Carbonite::mock(function () use (&$seconds) {
+            return Carbon::parse('2019-08-01')->addSeconds($seconds);
+        });
+        Carbonite::release();
+
+        self::assertSame(1.0, Carbonite::speed());
+
+        Carbonite::speed(0.0);
+
+        self::assertSame(0.0, Carbonite::speed());
+        self::assertSame('2019-08-01 00:00:00', Carbon::now()->format('Y-m-d H:i:s'));
+
+        $seconds++;
+
+        self::assertSame('00:00:00', Carbon::now()->format('H:i:s'));
+
+        $seconds += 3654;
+
+        self::assertSame('00:00:00', Carbon::now()->format('H:i:s'));
+
+        Carbonite::speed(1.0);
+
+        $seconds++;
+
+        self::assertSame(1.0, Carbonite::speed());
+        self::assertSame('00:00:01', Carbon::now()->format('H:i:s'));
+
+        $seconds += 3654;
+
+        self::assertSame('01:00:55', Carbon::now()->format('H:i:s'));
+
+        Carbonite::speed(0.1);
+
+        $seconds += 100;
+
+        self::assertSame(0.1, Carbonite::speed());
+        self::assertSame('01:01:05', Carbon::now()->format('H:i:s'));
+
+        Carbonite::speed(5.0);
+
+        $seconds += 3;
+
+        self::assertSame(5.0, Carbonite::speed());
+        self::assertSame('01:01:20', Carbon::now()->format('H:i:s'));
     }
 }

@@ -39,9 +39,9 @@ class Carbonite
      *
      * @param CarbonInterface $realNow
      *
-     * @return Carbon|CarbonImmutable
+     * @return CarbonInterface
      */
-    public static function fake(CarbonInterface $realNow)
+    public static function fake(CarbonInterface $realNow): CarbonInterface
     {
         return self::tibanna()->fake($realNow);
     }
@@ -50,10 +50,10 @@ class Carbonite
      * Freeze the time to a given moment (now by default).
      * As a second optional parameter you can choose the new time speed after the freeze (0 by default).
      *
-     * @param string|Carbon|CarbonImmutable|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $toMoment
-     * @param float                                                                                               $speed
+     * @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $toMoment
+     * @param float                                                                                        $speed
      */
-    public static function freeze($toMoment = 'now', float $speed = 0): void
+    public static function freeze($toMoment = 'now', float $speed = 0.0): void
     {
         self::tibanna()->freeze($toMoment, $speed);
     }
@@ -79,7 +79,7 @@ class Carbonite
      * Speed up the time in the fake timeline by the given factor.
      * Returns the new speed.
      *
-     * @param float|null $factor
+     * @param float $factor
      *
      * @return float
      */
@@ -92,7 +92,7 @@ class Carbonite
      * Slow down the time in the fake timeline by the given factor.
      * Returns the new speed.
      *
-     * @param float|null $factor
+     * @param float $factor
      *
      * @return float
      */
@@ -115,8 +115,8 @@ class Carbonite
      * Jump to a given moment in the fake timeline keeping the current speed.
      * A second parameter can be passed to change the speed after the jump.
      *
-     * @param string|Carbon|CarbonImmutable|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $moment
-     * @param float                                                                                               $speed
+     * @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $moment
+     * @param float                                                                                        $speed
      */
     public static function jumpTo($moment, float $speed = null): void
     {
@@ -129,8 +129,8 @@ class Carbonite
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
      * or a interval (DateInterval/CarbonInterval).
      *
-     * @param string|float|CarbonInterval|DateInterval $duration
-     * @param float                                    $speed
+     * @param string|int|float|CarbonInterval|DateInterval $duration
+     * @param float                                        $speed
      */
     public static function elapse($duration, float $speed = null): void
     {
@@ -143,8 +143,8 @@ class Carbonite
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
      * or a interval (DateInterval/CarbonInterval).
      *
-     * @param string|float|CarbonInterval|DateInterval $duration
-     * @param float                                    $speed
+     * @param string|int|float|CarbonInterval|DateInterval $duration
+     * @param float                                        $speed
      */
     public static function rewind($duration, float $speed = null): void
     {
@@ -170,7 +170,7 @@ class Carbonite
      * probably won't need this methods in your own code and tests, you more likely need the
      * freeze() or jumpTo() method.
      *
-     * @param string|CarbonInterface|Closure $testNow
+     * @param string|CarbonInterface|Closure|null $testNow
      */
     public static function mock($testNow): void
     {
