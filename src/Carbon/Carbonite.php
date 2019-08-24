@@ -64,7 +64,7 @@ class Carbonite
      *  - 0 = Frozen time;
      *  - 0.5 = Time passes twice more slowly;
      *  - 1 = Real life speed;
-     *  - 2 = Time passes twice faster.
+     *  - 2 = Time passes twice as fast.
      *
      * @param float|null $speed
      *
@@ -138,7 +138,7 @@ class Carbonite
     }
 
     /**
-     * Add the given duration to the fake timeline keeping the current speed.
+     * Subtract the given duration to the fake timeline keeping the current speed.
      * A second parameter can be passed to change the speed after the jump.
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
      * or a interval (DateInterval/CarbonInterval).
