@@ -17,6 +17,8 @@ matrix:
   - php: 7.4snapshot
     env: setup=lowest
   - php: 7.4snapshot
+  - php: '7.3'
+    env: style=true
 
 before_install:
 - travis_retry composer self-update
@@ -25,13 +27,16 @@ before_script:
 - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
 - chmod +x ./cc-test-reporter
 - ./cc-test-reporter before-build
+- if [[ $coverage != 'true' ]]; then phpenv config-rm xdebug.ini || echo "XDebug is not enabled"; fi
 
 install:
 - if [[ $setup = 'stable' ]]; then travis_retry composer update --prefer-dist --no-interaction --dev; fi
 - if [[ $setup = 'lowest' ]]; then travis_retry composer update --prefer-dist --no-interaction --prefer-lowest --dev; fi
 
 script:
-- vendor/bin/phpunit --verbose --coverage-text --coverage-clover=clover.xml
+- if [[ $style != 'true' && $coverage != 'true' ]]; then composer phpunit; fi
+- if [[ $style != 'true' && $coverage = 'true' ]]; then vendor/bin/phpunit --verbose --coverage-text --coverage-clover=clover.xml; fi
+- if [[ $style = 'true' ]]; then composer style-check; fi
 
 after_script:
 - if [[ $coverage = 'true' ]]; then ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT; fi
@@ -42,5 +47,6 @@ after_success:
 env:
   global:
   - coverage=false
+  - style=false
   - setup=stable
   - CC_TEST_REPORTER_ID=f30b85a3fcfe1123f162d9731445f8df3be1f1dcb119b36c08c0d695660cc4f1
