@@ -4,6 +4,8 @@ namespace Tests\Carbon;
 
 use Carbon\Carbon;
 use Carbon\Carbonite;
+use Carbon\Carbonite\UnfrozenTimeException;
+use DateInterval;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
@@ -231,5 +233,140 @@ class CarboniteTest extends TestCase
         Carbonite::decelerate(2.0);
 
         self::assertSame(1 / 10, Carbonite::speed());
+    }
+
+    /**
+     * @covers ::unfreeze
+     * @covers \Carbon\Carbonite\Tibanna::unfreeze
+     */
+    public function testUnfreeze()
+    {
+        Carbonite::freeze();
+
+        self::assertSame(0.0, Carbonite::speed());
+
+        Carbonite::unfreeze();
+
+        self::assertSame(1.0, Carbonite::speed());
+    }
+
+    /**
+     * @covers ::unfreeze
+     * @covers \Carbon\Carbonite\Tibanna::unfreeze
+     * @covers \Carbon\Carbonite\UnfrozenTimeException::<public>
+     */
+    public function testUnfreezeException()
+    {
+        self::expectException(UnfrozenTimeException::class);
+
+        Carbonite::freeze();
+        Carbonite::unfreeze();
+        Carbonite::unfreeze();
+    }
+
+    /**
+     * @covers ::jumpTo
+     * @covers \Carbon\Carbonite\Tibanna::jumpTo
+     */
+    public function testJumpTo()
+    {
+        Carbonite::speed(2.0);
+        Carbonite::jumpTo('2019-08-24');
+
+        self::assertSame('2019-08-24', Carbon::today()->format('Y-m-d'));
+        self::assertSame(2.0, Carbonite::speed());
+
+        Carbonite::jumpTo('next Monday', 3.0);
+
+        self::assertSame('2019-08-26', Carbon::today()->format('Y-m-d'));
+        self::assertSame(3.0, Carbonite::speed());
+    }
+
+    /**
+     * @covers ::elapse
+     * @covers \Carbon\Carbonite\Tibanna::elapse
+     * @covers \Carbon\Carbonite\Tibanna::callDurationMethodAndJump
+     */
+    public function testElapse()
+    {
+        Carbonite::speed(2.0);
+        Carbonite::jumpTo('2019-08-12');
+
+        self::assertSame('2019-08-12', Carbon::today()->format('Y-m-d'));
+        self::assertSame(2.0, Carbonite::speed());
+
+        Carbonite::elapse('3 months and 4 days');
+
+        self::assertSame('2019-11-16', Carbon::today()->format('Y-m-d'));
+        self::assertSame(2.0, Carbonite::speed());
+
+        Carbonite::elapse(new DateInterval('P1Y'), 3.0);
+
+        self::assertSame('2020-11-16', Carbon::today()->format('Y-m-d'));
+        self::assertSame(3.0, Carbonite::speed());
+
+        $realSeconds = 0;
+        Carbonite::mock(function () use (&$realSeconds) {
+            return Carbon::parse('2019-08-01')->addSeconds($realSeconds);
+        });
+        Carbonite::release();
+        Carbonite::speed(3.0);
+
+        $realSeconds += 5;
+        Carbonite::elapse(3);
+
+        self::assertSame('2019-08-01 00:00:18', Carbon::now()->format('Y-m-d H:i:s'));
+    }
+
+    /**
+     * @covers ::rewind
+     * @covers \Carbon\Carbonite\Tibanna::rewind
+     */
+    public function testRewind()
+    {
+        Carbonite::speed(2.0);
+        Carbonite::jumpTo('2019-08-12');
+
+        self::assertSame('2019-08-12', Carbon::today()->format('Y-m-d'));
+        self::assertSame(2.0, Carbonite::speed());
+
+        Carbonite::rewind('3 months and 4 days');
+
+        self::assertSame('2019-05-08', Carbon::today()->format('Y-m-d'));
+        self::assertSame(2.0, Carbonite::speed());
+
+        Carbonite::rewind(new DateInterval('P1Y'), 3.0);
+
+        self::assertSame('2018-05-08', Carbon::today()->format('Y-m-d'));
+        self::assertSame(3.0, Carbonite::speed());
+
+        $realSeconds = 0;
+        Carbonite::mock(function () use (&$realSeconds) {
+            return Carbon::parse('2019-08-01')->addSeconds($realSeconds);
+        });
+        Carbonite::release();
+        Carbonite::speed(3.0);
+
+        $realSeconds += 5;
+        Carbonite::rewind(3);
+
+        self::assertSame('2019-08-01 00:00:12', Carbon::now()->format('Y-m-d H:i:s'));
+    }
+
+    /**
+     * @covers ::release
+     * @covers \Carbon\Carbonite\Tibanna::release
+     */
+    public function testRelease()
+    {
+        Carbonite::freeze('2019-08-24');
+
+        self::assertTrue(Carbon::hasTestNow());
+        self::assertSame(0.0, Carbonite::speed());
+
+        Carbonite::release();
+
+        self::assertFalse(Carbon::hasTestNow());
+        self::assertSame(1.0, Carbonite::speed());
     }
 }

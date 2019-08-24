@@ -33,7 +33,7 @@ class Tibanna
      *
      * @var float
      */
-    private $speed = 1;
+    private $speed = 1.0;
 
     /**
      * The mocked now instance to test Carbonite itself with fake time.
@@ -53,7 +53,7 @@ class Tibanna
     public function fake(CarbonInterface $realNow): CarbonInterface
     {
         if (!$this->moment) {
-            $this->speed(1);
+            $this->speed(1.0);
         }
 
         /** @var CarbonInterface $moment */
@@ -208,7 +208,7 @@ class Tibanna
     public function release(): void
     {
         $this->moment = null;
-        $this->speed = 1;
+        $this->speed = 1.0;
         Carbon::setTestNow($this->testNow);
         CarbonImmutable::setTestNow($this->testNow);
     }
