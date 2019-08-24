@@ -56,7 +56,9 @@ class Tibanna
             $this->speed(1);
         }
 
-        $fakeNow = $this->moment->copy();
+        /** @var CarbonInterface $moment */
+        $moment = $this->moment;
+        $fakeNow = $moment->copy();
 
         if (!$this->speed) {
             return $fakeNow;
@@ -153,11 +155,11 @@ class Tibanna
      */
     public function unfreeze(): void
     {
-        if ($this->speed !== 0) {
+        if ($this->speed !== 0.0) {
             throw new UnfrozenTimeException();
         }
 
-        $this->speed(1);
+        $this->speed(1.0);
     }
 
     /**

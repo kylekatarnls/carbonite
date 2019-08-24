@@ -182,4 +182,54 @@ class CarboniteTest extends TestCase
         self::assertSame(5.0, Carbonite::speed());
         self::assertSame('01:01:20', Carbon::now()->format('H:i:s'));
     }
+
+    /**
+     * @covers ::accelerate
+     * @covers \Carbon\Carbonite\Tibanna::accelerate
+     */
+    public function testAccelerate()
+    {
+        Carbonite::speed(0.0);
+        Carbonite::accelerate(50.0);
+
+        self::assertSame(0.0, Carbonite::speed());
+
+        Carbonite::speed(1);
+        Carbonite::accelerate(50.0);
+
+        self::assertSame(50.0, Carbonite::speed());
+
+        Carbonite::accelerate(0.1);
+
+        self::assertSame(5.0, Carbonite::speed());
+
+        Carbonite::accelerate(2.0);
+
+        self::assertSame(10.0, Carbonite::speed());
+    }
+
+    /**
+     * @covers ::decelerate
+     * @covers \Carbon\Carbonite\Tibanna::decelerate
+     */
+    public function testDecelerate()
+    {
+        Carbonite::speed(0.0);
+        Carbonite::decelerate(50.0);
+
+        self::assertSame(0.0, Carbonite::speed());
+
+        Carbonite::speed(1);
+        Carbonite::decelerate(50.0);
+
+        self::assertSame(1 / 50, Carbonite::speed());
+
+        Carbonite::decelerate(0.1);
+
+        self::assertSame(1 / 5, Carbonite::speed());
+
+        Carbonite::decelerate(2.0);
+
+        self::assertSame(1 / 10, Carbonite::speed());
+    }
 }
