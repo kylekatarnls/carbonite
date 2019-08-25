@@ -56,15 +56,19 @@ class Tibanna
             $this->speed(1.0);
         }
 
+        // Calling speed() if $this->moment is null implies that both moment and lastFrozenAt are set:
         /** @var CarbonInterface $moment */
         $moment = $this->moment;
+        /** @var CarbonInterface $lastFrozenAt */
+        $lastFrozenAt = $this->lastFrozenAt;
+
         $fakeNow = $moment->copy();
 
         if (!$this->speed) {
             return $fakeNow;
         }
 
-        $microseconds = $realNow->diffInMicroseconds($this->lastFrozenAt, true);
+        $microseconds = $lastFrozenAt->diffInMicroseconds($realNow, true);
 
         return $fakeNow->addMicroseconds((int) round($microseconds * $this->speed));
     }

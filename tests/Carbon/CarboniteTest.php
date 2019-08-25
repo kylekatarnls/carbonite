@@ -183,6 +183,14 @@ class CarboniteTest extends TestCase
 
         self::assertSame(5.0, Carbonite::speed());
         self::assertSame('01:01:20', Carbon::now()->format('H:i:s'));
+
+        Carbonite::mock(null);
+        Carbonite::release();
+        Carbonite::speed(100);
+        $nextSecond = Carbon::now()->addSecond();
+        usleep(10 * 1000);
+
+        self::assertTrue(Carbon::now()->greaterThan($nextSecond));
     }
 
     /**

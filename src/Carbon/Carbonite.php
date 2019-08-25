@@ -12,7 +12,7 @@ use DateTimeInterface;
 class Carbonite
 {
     /**
-     * The Tibanna instance is our singleton instance because any action with the Carbonite
+     * The Tibanna instance is our singleton instance because any time action with the Carbonite
      * needs Tibanna gas.
      *
      * @var Tibanna|null
