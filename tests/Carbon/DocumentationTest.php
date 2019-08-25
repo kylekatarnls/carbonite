@@ -5,6 +5,7 @@ namespace Tests\Carbon;
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use Carbon\Carbonite;
+use Carbon\CarbonPeriod;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use Throwable;
@@ -25,6 +26,7 @@ class DocumentationTest extends TestCase
             Carbonite::class,
             Carbon::class,
             CarbonInterval::class,
+            CarbonPeriod::class,
         ];
 
         foreach ($imports as $import) {
@@ -81,6 +83,21 @@ class DocumentationTest extends TestCase
         $lines = array_map('trim', $matches[1]);
 
         self::assertSame($lines, $output, "Unexpected output for code:\n$code");
+
+        preg_match_all('/^class (.*) extends TestCase$/m', $example, $matches, PREG_PATTERN_ORDER);
+
+        foreach ($matches[1] as $className) {
+            /** @var TestCase $testCase */
+            $testCase = new $className();
+
+            foreach (get_class_methods($testCase) as $method) {
+                if (preg_match('/^test[A-Z]/', $method)) {
+                    $testCase->setUp();
+                    $testCase->$method();
+                    $testCase->tearDown();
+                }
+            }
+        }
     }
 
     public function getReadmeExamples(): Generator

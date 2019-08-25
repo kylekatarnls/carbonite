@@ -65,6 +65,12 @@ You can also use `CarbonImmutable`, both will be synchronized.
 And as `Carbonite` directly handle any date created with `Carbon`, it will work just fine for properties like
 created_at, updated_at or any custom date field in your Laravel models or any framework using `Carbon`.
 
+[Example of Laravel unit test](https://github.com/kylekatarnls/carbonite-laravel-example/blob/master/tests/Unit/UserTest.php)
+
+[Example of Laravel feature test](https://github.com/kylekatarnls/carbonite-laravel-example/blob/master/tests/Feature/WelcomeTest.php)
+
+[Example of raw PHPUnit test](#phpunit-example)
+
 ## Available methods
 
 ### freeze
@@ -294,3 +300,50 @@ you chose.
 This is a very low-level feature used for the internal unit tests of **Carbonite** and you
 probably won't need this methods in your own code and tests, you more likely need the
 [`freeze()`](#freeze) or [`jumpTo()`](#jumpto) method.
+
+## PHPUnit example
+
+```php
+use Carbon\Carbonite;
+use Carbon\CarbonPeriod;
+use PHPUnit\Framework\TestCase;
+
+class MyProjectTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        // Working with frozen time in unit tests is highly recommended.
+        Carbonite::freeze();
+    }
+
+    protected function tearDown(): void
+    {
+        // Release after each test to isolate the timeline of each one.
+        Carbonite::release();
+    }
+
+    public function testHolidays()
+    {
+        $holidays = CarbonPeriod::create('2019-12-23', '2020-01-06', CarbonPeriod::EXCLUDE_END_DATE);
+        Carbonite::jumpTo('2019-12-22');
+
+        $this->assertFalse($holidays->isStarted());
+
+        Carbonite::elapse('1 day');
+
+        $this->assertTrue($holidays->isInProgress());
+
+        Carbonite::jumpTo('2020-01-05 22:00');
+
+        $this->assertFalse($holidays->isEnded());
+
+        Carbonite::elapse('2 hours');
+
+        $this->assertTrue($holidays->isEnded());
+
+        Carbonite::rewind('1 microsecond');
+
+        $this->assertFalse($holidays->isEnded());
+    }
+}
+```
