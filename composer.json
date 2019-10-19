@@ -8,7 +8,7 @@
   },
   "require-dev": {
     "phpunit/phpunit": "^8.3.2",
-    "phpmd/phpmd": "^2.7.0",
+    "vimeo/psalm": "^3.0@dev",
     "phpstan/phpstan": "^0.11.0",
     "friendsofphp/php-cs-fixer": "^2.15.0"
   },
@@ -38,11 +38,13 @@
     "style-check": [
       "@phpcs",
       "@phpstan",
-      "@phpmd"
+      "@phpmd",
+      "@psalm"
     ],
     "phpunit": "phpunit --verbose",
     "phpcs": "php-cs-fixer fix -v --diff --dry-run",
     "phpstan": "phpstan analyse src tests",
-    "phpmd": "phpmd src text phpmd.xml"
+    "phpmd": "phpmd src text phpmd.xml",
+    "psalm": "psalm"
   }
 }
