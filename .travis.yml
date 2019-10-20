@@ -28,6 +28,7 @@ before_script:
 - chmod +x ./cc-test-reporter
 - ./cc-test-reporter before-build
 - if [[ $coverage != 'true' ]]; then phpenv config-rm xdebug.ini || echo "XDebug is not enabled"; fi
+- if [[ $style = 'true' ]]; then pecl install ast; fi
 
 install:
 - if [[ $setup = 'stable' ]]; then travis_retry composer update --prefer-dist --no-interaction --dev; fi
