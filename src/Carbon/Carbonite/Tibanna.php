@@ -171,7 +171,7 @@ class Tibanna
      * A second parameter can be passed to change the speed after the jump.
      *
      * @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $moment
-     * @param float                                                                                        $speed
+     * @param float|null                                                                                   $speed
      */
     public function jumpTo($moment, float $speed = null): void
     {
@@ -185,7 +185,7 @@ class Tibanna
      * or a interval (DateInterval/CarbonInterval).
      *
      * @param string|float|CarbonInterval|DateInterval $duration
-     * @param float                                    $speed
+     * @param float|null                               $speed
      */
     public function elapse($duration, float $speed = null): void
     {
@@ -199,7 +199,7 @@ class Tibanna
      * or a interval (DateInterval/CarbonInterval).
      *
      * @param string|int|float|CarbonInterval|DateInterval $duration
-     * @param float                                        $speed
+     * @param float|null                                   $speed
      */
     public function rewind($duration, float $speed = null): void
     {
@@ -250,7 +250,7 @@ class Tibanna
      *
      * @param string                                       $method
      * @param string|int|float|CarbonInterval|DateInterval $duration
-     * @param float                                        $speed
+     * @param float|null                                   $speed
      */
     private function callDurationMethodAndJump(string $method, $duration, float $speed = null): void
     {
