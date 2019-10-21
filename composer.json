@@ -12,6 +12,7 @@
     "phpmd/phpmd": "^2.7",
     "phpstan/phpstan": "^0.11.0",
     "phpunit/phpunit": "^8.3.2",
+    "squizlabs/php_codesniffer": "^3.0",
     "vimeo/psalm": "^3.0@dev"
   },
   "autoload": {
@@ -39,6 +40,7 @@
     ],
     "style-check": [
       "@phpcs",
+      "@phpcsf",
       "@phpstan",
       "@phpmd",
       "@psalm",
@@ -46,7 +48,8 @@
     ],
     "phan": "phan",
     "phpunit": "phpunit --verbose",
-    "phpcs": "php-cs-fixer fix -v --diff --dry-run",
+    "phpcs": "phpcs",
+    "phpcsf": "php-cs-fixer fix -v --diff --dry-run",
     "phpstan": "phpstan analyse src tests",
     "phpmd": "phpmd src text phpmd.xml",
     "psalm": "psalm"

@@ -37,7 +37,11 @@ class DocumentationTest extends TestCase
             }
         }
 
-        $code = (string) preg_replace('#^//.* [Nn]ow i(?:t\')?s (.*)$#m', 'Carbonite::mock("$1"); Carbon::hasTestNow() || Carbon::setTestNow(Carbon::parse("$1"));', $code);
+        $code = (string) preg_replace(
+            '#^//.* [Nn]ow i(?:t\')?s (.*)$#m',
+            'Carbonite::mock("$1"); Carbon::hasTestNow() || Carbon::setTestNow(Carbon::parse("$1"));',
+            $code
+        );
         $needMock = false;
 
         $code = (string) preg_replace_callback('#^(u)?sleep\((.+)\);#m', function ($matches) use (&$needMock) {
