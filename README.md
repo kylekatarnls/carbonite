@@ -347,3 +347,34 @@ class MyProjectTest extends TestCase
     }
 }
 ```
+
+## `fakeAsync()` for PHP
+
+If you're familiar with `fakeAsync()` and `tick()` of Angular testing tools, then you can get the same syntax in
+your PHP tests using:
+
+```php
+use Carbon\Carbonite;
+
+function fakeAsync(callable $fn): void {
+    Carbonite::freeze();
+    $fn();
+    Carbonite::release();
+}
+
+function tick(int $milliseconds): void {
+    Carbonite::elapse("$milliseconds milliseconds");
+}
+```
+
+And use it as below:
+```php
+use Carbon\Carbon;
+
+fakeAsync(function () {
+    $now = Carbon::now();
+    tick(2000);
+
+    echo $now->diffForHumans(); // 2 seconds ago
+});
+```
