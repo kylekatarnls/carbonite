@@ -116,7 +116,7 @@ class Carbonite
      * A second parameter can be passed to change the speed after the jump.
      *
      * @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $moment
-     * @param float                                                                                        $speed
+     * @param float|null                                                                                   $speed
      */
     public static function jumpTo($moment, float $speed = null): void
     {
@@ -130,7 +130,7 @@ class Carbonite
      * or a interval (DateInterval/CarbonInterval).
      *
      * @param string|int|float|CarbonInterval|DateInterval $duration
-     * @param float                                        $speed
+     * @param float|null                                   $speed
      */
     public static function elapse($duration, float $speed = null): void
     {
@@ -144,7 +144,7 @@ class Carbonite
      * or a interval (DateInterval/CarbonInterval).
      *
      * @param string|int|float|CarbonInterval|DateInterval $duration
-     * @param float                                        $speed
+     * @param float|null                                   $speed
      */
     public static function rewind($duration, float $speed = null): void
     {

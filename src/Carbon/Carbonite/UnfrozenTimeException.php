@@ -7,8 +7,11 @@ use Throwable;
 
 final class UnfrozenTimeException extends RuntimeException
 {
-    public function __construct($message = 'The time is not currently frozen.', $code = 0, Throwable $previous = null)
-    {
+    public function __construct(
+        string $message = 'The time is not currently frozen.',
+        int $code = 0,
+        Throwable $previous = null
+    ) {
         parent::__construct($message, $code, $previous);
     }
 }
