@@ -375,6 +375,6 @@ fakeAsync(function () {
     $now = Carbon::now();
     tick(2000);
 
-    echo $now->diffForHumans(); // 2 seconds ago
+    echo $now->diffForHumans(); // output: 2 seconds ago
 });
 ```
