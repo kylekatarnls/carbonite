@@ -14,9 +14,9 @@ matrix:
     env: setup=lowest
   - php: '7.3'
     env: coverage=true
-  - php: 7.4snapshot
+  - php: '7.4'
     env: setup=lowest
-  - php: 7.4snapshot
+  - php: '7.4'
   - php: '7.3'
     env: style=true
 
@@ -31,8 +31,8 @@ before_script:
 - if [[ $style = 'true' ]]; then pecl install ast; fi
 
 install:
-- if [[ $setup = 'stable' ]]; then travis_retry composer update --prefer-dist --no-interaction --dev; fi
-- if [[ $setup = 'lowest' ]]; then travis_retry composer update --prefer-dist --no-interaction --prefer-lowest --dev; fi
+- if [[ $setup = 'stable' ]]; then travis_retry composer update --prefer-dist --no-interaction; fi
+- if [[ $setup = 'lowest' ]]; then travis_retry composer update --prefer-dist --no-interaction --prefer-lowest; fi
 
 script:
 - if [[ $style != 'true' && $coverage != 'true' ]]; then composer phpunit; fi
