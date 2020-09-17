@@ -8,6 +8,7 @@ use Carbon\Carbonite\UnfrozenTimeException;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
+use Exception;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -84,6 +85,7 @@ class CarboniteTest extends TestCase
     /**
      * @covers ::freeze
      * @covers \Carbon\Carbonite\Tibanna::freeze
+     * @covers \Carbon\Carbonite\Tibanna::setTestNow
      */
     public function testFreeze(): void
     {
@@ -416,6 +418,32 @@ class CarboniteTest extends TestCase
 
         self::assertFalse(Carbon::hasTestNow());
         self::assertSame(1.0, Carbonite::speed());
+        self::assertLessThan(500, Carbon::now()->diffInMicroseconds(new DateTime()));
+    }
+
+    /**
+     * @covers ::do
+     * @covers \Carbon\Carbonite\Tibanna::do
+     */
+    public function testDoWithError(): void
+    {
+        $date = null;
+        $message = null;
+
+        try {
+            Carbonite::do('2019-08-24', static function () use (&$date) {
+                $date = Carbon::now();
+
+                throw new Exception('stop');
+            });
+
+            $date = 'erased';
+        } catch (Exception $e) {
+            $message = $e->getMessage();
+        }
+
+        self::assertSame('2019-08-24', $date->format('Y-m-d'));
+        self::assertSame('stop', $message);
         self::assertLessThan(500, Carbon::now()->diffInMicroseconds(new DateTime()));
     }
 
