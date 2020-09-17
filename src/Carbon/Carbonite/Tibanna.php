@@ -11,6 +11,7 @@ use Closure;
 use DateInterval;
 use DatePeriod;
 use DateTimeInterface;
+use Throwable;
 
 class Tibanna
 {
@@ -100,8 +101,7 @@ class Tibanna
             return $this->fake($realNow);
         };
 
-        Carbon::setTestNow($getNow);
-        CarbonImmutable::setTestNow($getNow);
+        $this->setTestNow($getNow);
         $this->speed = $speed;
     }
 
@@ -213,8 +213,7 @@ class Tibanna
     {
         $this->moment = null;
         $this->speed = 1.0;
-        Carbon::setTestNow($this->testNow);
-        CarbonImmutable::setTestNow($this->testNow);
+        $this->setTestNow($this->testNow);
     }
 
     /**
@@ -243,6 +242,66 @@ class Tibanna
         }
 
         $this->testNow = $testNow instanceof CarbonInterface ? $testNow : Carbon::make($testNow);
+    }
+
+    /**
+     * Trigger a given $action in a frozen instant $testNow. And restore previous moment and
+     * speed once it's done, rather it succeeded or threw an error or an exception.
+     *
+     * Returns the value returned by the given $action.
+     *
+     * @param string|CarbonInterface|Closure|null $testNow
+     * @param callable                            $action
+     *
+     * @return mixed
+     */
+    public function do($testNow, callable $action)
+    {
+        $throwable = null;
+        $result = null;
+        $initialSpeed = $this->speed;
+        $initialTestNow = Carbon::getTestNow();
+        $this->freeze($testNow, 0);
+
+        try {
+            $result = $action();
+        } catch (Throwable $error) {
+            $throwable = $error;
+        }
+
+        $this->speed($initialSpeed);
+        $this->setTestNow($initialTestNow);
+
+        if ($throwable) {
+            throw $throwable;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Set a Carbon and CarbonImmutable instance (real or mock) to be returned when a "now"
+     * instance is created.  The provided instance will be returned
+     * specifically under the following conditions:
+     *   - A call to the static now() method, ex. Carbon::now()
+     *   - When a null (or blank string) is passed to the constructor or parse(), ex. new Carbon(null)
+     *   - When the string "now" is passed to the constructor or parse(), ex. new Carbon('now')
+     *   - When a string containing the desired time is passed to Carbon::parse().
+     *
+     * Note the timezone parameter was left out of the examples above and
+     * has no affect as the mock value will be returned regardless of its value.
+     *
+     * To clear the test instance call this method using the default
+     * parameter of null.
+     *
+     * /!\ Use this method for unit tests only.
+     *
+     * @param static|string|null $testNow real or mock Carbon instance
+     */
+    protected function setTestNow($testNow = null)
+    {
+        Carbon::setTestNow($testNow);
+        CarbonImmutable::setTestNow($testNow);
     }
 
     /**

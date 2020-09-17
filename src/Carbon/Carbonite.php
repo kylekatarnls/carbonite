@@ -160,6 +160,38 @@ class Carbonite
     }
 
     /**
+     * Trigger a given $action in a frozen instant $testNow. And restore previous moment and
+     * speed once it's done, rather it succeeded or threw an error or an exception.
+     *
+     * Returns the value returned by the given $action.
+     *
+     * @param string|CarbonInterface|Closure|null $testNow
+     * @param callable                            $action
+     *
+     * @return mixed
+     */
+    public static function do($testNow, callable $action)
+    {
+        return self::tibanna()->do($testNow, $action);
+    }
+
+    /**
+     * Trigger a given $action in the frozen current instant. And restore previous
+     * speed once it's done, rather it succeeded or threw an error or an exception.
+     *
+     * Returns the value returned by the given $action.
+     *
+     * @param string|CarbonInterface|Closure|null $testNow
+     * @param callable                            $action
+     *
+     * @return mixed
+     */
+    public static function doNow(callable $action)
+    {
+        return self::tibanna()->do('now', $action);
+    }
+
+    /**
      * Set the "real" now moment, it's a mock inception. It means that when you call release()
      * You will no longer go back to present but you will fallback to the mocked now. And the
      * mocked now will also determine the base speed to consider. If this mocked instance is
