@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Carbon\Carbonite;
 use Carbon\Carbonite\UnfrozenTimeException;
 use DateInterval;
+use DateTime;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
@@ -190,7 +191,7 @@ class CarboniteTest extends TestCase
         $nextSecond = Carbon::now()->addSecond();
         usleep(10 * 1000);
 
-        self::assertTrue(Carbon::now()->greaterThan($nextSecond));
+        self::assertTrue(Carbon::now() > $nextSecond);
     }
 
     /**
@@ -376,5 +377,87 @@ class CarboniteTest extends TestCase
 
         self::assertFalse(Carbon::hasTestNow());
         self::assertSame(1.0, Carbonite::speed());
+    }
+
+    /**
+     * @covers ::do
+     * @covers \Carbon\Carbonite\Tibanna::do
+     */
+    public function testDo(): void
+    {
+        [
+            $speed,
+            $date,
+            $hasTestNow,
+            $nestedDate,
+            $dateAgain,
+            $hasTestNowAgain,
+        ] = Carbonite::do('2019-08-24', static function () {
+            usleep(42);
+
+            return [
+                Carbonite::speed(),
+                Carbon::now()->format('Y-m-d H:i:s.u'),
+                Carbon::hasTestNow(),
+                Carbonite::do('2020-05-12 12:34:46.173726', static function () {
+                    return Carbon::now()->format('Y-m-d H:i:s.u');
+                }),
+                Carbon::now()->format('Y-m-d H:i:s.u'),
+                Carbon::hasTestNow(),
+            ];
+        });
+
+        self::assertTrue($hasTestNow);
+        self::assertSame(0.0, $speed);
+        self::assertSame('2019-08-24 00:00:00.000000', $date);
+        self::assertSame('2020-05-12 12:34:46.173726', $nestedDate);
+        self::assertTrue($hasTestNowAgain);
+        self::assertSame('2019-08-24 00:00:00.000000', $dateAgain);
+
+        self::assertFalse(Carbon::hasTestNow());
+        self::assertSame(1.0, Carbonite::speed());
+        self::assertLessThan(500, Carbon::now()->diffInMicroseconds(new DateTime()));
+    }
+
+    /**
+     * @covers ::doNow
+     * @covers \Carbon\Carbonite\Tibanna::doNow
+     */
+    public function testDoNow(): void
+    {
+        [
+            $speed,
+            $date,
+            $hasTestNow,
+            $nestedDate,
+            $dateAgain,
+            $hasTestNowAgain,
+        ] = Carbonite::doNow(static function () {
+            Carbonite::elapse('32 minutes');
+
+            return [
+                Carbonite::speed(),
+                Carbon::now(),
+                Carbon::hasTestNow(),
+                Carbonite::doNow(static function () {
+                    Carbonite::elapse('5 hours');
+
+                    return Carbon::now();
+                }),
+                Carbon::now(),
+                Carbon::hasTestNow(),
+            ];
+        });
+
+        self::assertTrue($hasTestNow);
+        self::assertSame(0.0, $speed);
+        self::assertSame(32.0, round($date->floatDiffInMinutes(new DateTime())));
+        self::assertSame(32.0 + 5.0 * 60.0, round($nestedDate->floatDiffInMinutes(new DateTime())));
+        self::assertTrue($hasTestNowAgain);
+        self::assertSame(32.0, round($dateAgain->floatDiffInMinutes(new DateTime())));
+
+        self::assertFalse(Carbon::hasTestNow());
+        self::assertSame(1.0, Carbonite::speed());
+        self::assertSame(0.0, round(Carbon::now()->floatDiffInSeconds(new DateTime()) / 3));
     }
 }

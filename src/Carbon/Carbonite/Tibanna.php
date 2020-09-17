@@ -260,7 +260,11 @@ class Tibanna
         $throwable = null;
         $result = null;
         $initialSpeed = $this->speed;
-        $initialTestNow = Carbon::getTestNow();
+        $initialMutableTestNow = Carbon::getTestNow();
+        $initialImmutableTestNow = CarbonImmutable::getTestNow();
+        $initialTestNow = $this->testNow;
+        $initialMoment = $this->moment;
+        $initialFrozenAt = $this->lastFrozenAt;
         $this->freeze($testNow, 0);
 
         try {
@@ -269,8 +273,12 @@ class Tibanna
             $throwable = $error;
         }
 
-        $this->speed($initialSpeed);
-        $this->setTestNow($initialTestNow);
+        $this->speed = $initialSpeed;
+        $this->testNow = $initialTestNow;
+        $this->moment = $initialMoment;
+        $this->lastFrozenAt = $initialFrozenAt;
+        Carbon::setTestNow($initialMutableTestNow);
+        CarbonImmutable::setTestNow($initialImmutableTestNow);
 
         if ($throwable) {
             throw $throwable;
@@ -280,19 +288,17 @@ class Tibanna
     }
 
     /**
-     * Set a Carbon and CarbonImmutable instance (real or mock) to be returned when a "now"
-     * instance is created.  The provided instance will be returned
-     * specifically under the following conditions:
+     * Set a Carbon and CarbonImmutable instance (real or mock) to be returned when a "now" instance
+     * is created. The provided instance will be returned specifically under the following conditions:
      *   - A call to the static now() method, ex. Carbon::now()
      *   - When a null (or blank string) is passed to the constructor or parse(), ex. new Carbon(null)
      *   - When the string "now" is passed to the constructor or parse(), ex. new Carbon('now')
      *   - When a string containing the desired time is passed to Carbon::parse().
      *
-     * Note the timezone parameter was left out of the examples above and
-     * has no affect as the mock value will be returned regardless of its value.
+     * Note the timezone parameter was left out of the examples above and has no affect as the mock
+     * value will be returned regardless of its value.
      *
-     * To clear the test instance call this method using the default
-     * parameter of null.
+     * To clear the test instance call this method using the default parameter of null.
      *
      * /!\ Use this method for unit tests only.
      *

@@ -284,9 +284,11 @@ Carbonite::do('2020-12-23', static function () {
     usleep(200);
     // Still the same output as time is frozen inside the callback
     echo Carbon::now()->format('Y-m-d H:i:s.u'); // output: 2020-12-23 00:00:00.000000
+echo Carbonite::speed(); // output: 0
 });
 // Now the speed is 1.5 on 2000-01-01 again
 echo Carbon::now()->format('Y-m-d'); // output: 2000-01-01
+echo Carbonite::speed(); // output: 1.5
 ```
 
 A second parameter can be passed to change the speed after the jump. By default, speed is not changed.
