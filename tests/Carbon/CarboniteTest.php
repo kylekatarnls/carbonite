@@ -421,7 +421,7 @@ class CarboniteTest extends TestCase
 
     /**
      * @covers ::doNow
-     * @covers \Carbon\Carbonite\Tibanna::doNow
+     * @covers \Carbon\Carbonite\Tibanna::do
      */
     public function testDoNow(): void
     {
