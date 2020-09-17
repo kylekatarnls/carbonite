@@ -432,7 +432,7 @@ class CarboniteTest extends TestCase
 
         try {
             Carbonite::do('2019-08-24', static function () use (&$date) {
-                $date = Carbon::now();
+                $date = Carbon::now()->format('Y-m-d');
 
                 throw new Exception('stop');
             });
@@ -442,7 +442,7 @@ class CarboniteTest extends TestCase
             $message = $e->getMessage();
         }
 
-        self::assertSame('2019-08-24', $date->format('Y-m-d'));
+        self::assertSame('2019-08-24', $date);
         self::assertSame('stop', $message);
         self::assertLessThan(500, Carbon::now()->diffInMicroseconds(new DateTime()));
     }

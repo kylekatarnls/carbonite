@@ -165,8 +165,8 @@ class Carbonite
      *
      * Returns the value returned by the given $action.
      *
-     * @param string|CarbonInterface|Closure|null $testNow
-     * @param callable                            $action
+     * @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $testNow
+     * @param callable                                                                                     $action
      *
      * @return mixed
      */
@@ -181,8 +181,7 @@ class Carbonite
      *
      * Returns the value returned by the given $action.
      *
-     * @param string|CarbonInterface|Closure|null $testNow
-     * @param callable                            $action
+     * @param callable $action
      *
      * @return mixed
      */

@@ -250,8 +250,8 @@ class Tibanna
      *
      * Returns the value returned by the given $action.
      *
-     * @param string|CarbonInterface|Closure|null $testNow
-     * @param callable                            $action
+     * @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $testNow
+     * @param callable                                                                                     $action
      *
      * @return mixed
      */
@@ -302,7 +302,7 @@ class Tibanna
      *
      * /!\ Use this method for unit tests only.
      *
-     * @param static|string|null $testNow real or mock Carbon instance
+     * @param Closure|CarbonInterface|string|null $testNow real or mock Carbon instance
      */
     protected function setTestNow($testNow = null)
     {
