@@ -146,7 +146,7 @@ echo Carbon::now()->isoFormat('h:mm:ssa'); // output: 8:02:01pm
 Carbonite::jumpTo('19 October 1977 11:00:00pm');
 Carbonite::speed(3600); // and it's like every second was an hour
 // 4 seconds later, now it's 19 October 1977 11:00:04pm
-// it's like it's alreay 3am the next day
+// it's like it's already 3am the next day
 echo Carbon::now()->isoFormat('YYYY-MM-DD h:mm:ssa'); // output: 1977-10-20 3:00:00am
 ```
 
@@ -269,6 +269,63 @@ echo Carbon::now()->format('Y-m-d'); // output: 1998-10-29
 ```
 
 A second parameter can be passed to change the speed after the jump. By default, speed is not changed.
+
+### do
+
+`do($moment, callable $action)`
+
+Trigger a given $action in a frozen instant $testNow. And restore previous moment and
+speed once it's done, rather it succeeded or threw an error or an exception.
+
+Returns the value returned by the given $action.
+
+```php
+Carbonite::freeze('2000-01-01', 1.5);
+Carbonite::do('2020-12-23', static function () {
+    echo Carbon::now()->format('Y-m-d H:i:s.u'); // output: 2020-12-23 00:00:00.000000
+    usleep(200);
+    // Still the same output as time is frozen inside the callback
+    echo Carbon::now()->format('Y-m-d H:i:s.u'); // output: 2020-12-23 00:00:00.000000
+echo Carbonite::speed(); // output: 0
+});
+// Now the speed is 1.5 on 2000-01-01 again
+echo Carbon::now()->format('Y-m-d'); // output: 2000-01-01
+echo Carbonite::speed(); // output: 1.5
+```
+
+`Carbonite::do()` is a good way to isolate a test and use a particular date
+as "now" then be sure to restore the previous state. If there is no previous
+Carbonite state (if you didn't do any freeze, jump, speed, etc.) then `Carbon::now()`
+will just no longer be mocked at all.
+
+### doNow
+
+`doNow(callable $action)`
+
+Trigger a given $action in the frozen current instant. And restore previous
+speed once it's done, rather it succeeded or threw an error or an exception.
+
+Returns the value returned by the given $action.
+
+```php
+// Assuming now is 17 September 2020 8pm
+Carbonite::doNow(static function () {
+    echo Carbon::now()->format('Y-m-d H:i:s.u'); // output: 2020-09-17 20:00:00.000000
+    usleep(200);
+    // Still the same output as time is frozen inside the callback
+    echo Carbon::now()->format('Y-m-d H:i:s.u'); // output: 2020-09-17 20:00:00.000000
+echo Carbonite::speed(); // output: 0
+});
+// Now the speed is 1 again
+echo Carbonite::speed(); // output: 1
+```
+
+It's actually a shortcut for `Carbonite::do('now', callable $action)`.
+
+`Carbonite::doNow()` is a good way to isolate a test, stop the time for this test
+then be sure to restore the previous state. If there is no previous
+Carbonite state (if you didn't do any freeze, jump, speed, etc.) then `Carbon::now()`
+will just no longer be mocked at all.
 
 ### release
 

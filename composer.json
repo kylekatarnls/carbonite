@@ -42,7 +42,6 @@
       "@phpcs",
       "@phpcsf",
       "@phpstan",
-      "@phpmd",
       "@psalm",
       "@phan"
     ],
