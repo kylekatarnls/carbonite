@@ -40,7 +40,6 @@
     "style-check": [
       "@phpcs",
       "@phpcsf",
-      "@phpstan",
       "@psalm",
       "@phan"
     ],
