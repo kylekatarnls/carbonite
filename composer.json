@@ -3,7 +3,7 @@
   "description": "Freeze, accelerate, slow down time and many more with Carbon.",
   "type": "library",
   "require": {
-    "php": "^7.2",
+    "php": "^7.2|^8",
     "nesbot/carbon": "^2.24"
   },
   "require-dev": {
