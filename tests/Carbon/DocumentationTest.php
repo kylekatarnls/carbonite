@@ -10,10 +10,14 @@ use Generator;
 use PHPUnit\Framework\TestCase;
 use Throwable;
 
+/**
+ * @coversDefaultClass \Carbon\Carbonite
+ */
 class DocumentationTest extends TestCase
 {
     /**
      * @dataProvider getReadmeExamples
+     * @covers ::freeze
      */
     public function testReadmeExamples(string $example): void
     {
