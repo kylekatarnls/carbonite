@@ -3,15 +3,14 @@
   "description": "Freeze, accelerate, slow down time and many more with Carbon.",
   "type": "library",
   "require": {
-    "php": "^7.2|^8",
+    "php": "^7.2 || ^8.0",
     "nesbot/carbon": "^2.24"
   },
   "require-dev": {
-    "friendsofphp/php-cs-fixer": "^2.16",
     "phan/phan": "^3.2",
     "phpmd/phpmd": "^2.9",
     "phpstan/phpstan": "^0.12",
-    "phpunit/phpunit": "^8.3.2|^9.4",
+    "phpunit/phpunit": "^8.5 || ^9.4",
     "squizlabs/php_codesniffer": "^3.0",
     "vimeo/psalm": "^4.1"
   },
@@ -48,7 +47,7 @@
     "phan": "phan",
     "phpunit": "phpunit --verbose",
     "phpcs": "phpcs",
-    "phpcsf": "php-cs-fixer fix -v --diff --dry-run",
+    "phpcsf": "composer require friendsofphp/php-cs-fixer:^2.16 && php-cs-fixer fix -v --diff --dry-run || echo 'php-cs-fixer not installed'",
     "phpstan": "phpstan analyse src tests",
     "phpmd": "phpmd src text phpmd.xml",
     "psalm": "psalm"
