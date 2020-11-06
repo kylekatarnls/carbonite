@@ -304,7 +304,7 @@ class Tibanna
      *
      * @param Closure|CarbonInterface|string|null $testNow real or mock Carbon instance
      */
-    protected function setTestNow($testNow = null)
+    protected function setTestNow($testNow = null): void
     {
         Carbon::setTestNow($testNow);
         CarbonImmutable::setTestNow($testNow);
