@@ -85,7 +85,7 @@ jobs:
         composer update --prefer-dist --no-progress --no-suggest ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }} ${{ matrix.php >= 8 && '--ignore-platform-req=php' || '' }};
 
     - name: Coverage
-      run: php -d memory_limit=-1 -d zend.enable_gc=0 vendor/phpunit/phpunit/phpunit --coverage-clover=coverage.xml --coverage-text
+      run: php -d memory_limit=-1 -d zend.enable_gc=0 vendor/phpunit/phpunit/phpunit --coverage-clover=clover.xml --coverage-text
 
     - name: Code Climate Test Reporter
       uses: aktions/codeclimate-test-reporter@v1

@@ -100,7 +100,7 @@ For example:
 ```php
 $now = Carbon::now()->addSecond();
 
-echo Carbon::now()->diffInSeconds($now); // output: 0
+echo (int) Carbon::now()->diffInSeconds($now); // output: 0
 
 // because first Carbon::now() is a few microseconds before the second one,
 // so the final diff is a bit less than 1 second
@@ -109,7 +109,7 @@ Carbonite::freeze();
 
 $now = Carbon::now()->addSecond();
 
-echo Carbon::now()->diffInSeconds($now); // output: 1
+echo (int) Carbon::now()->diffInSeconds($now); // output: 1
 
 // Time is frozen so the whole thing behaves as if it was instantaneous
 ```
