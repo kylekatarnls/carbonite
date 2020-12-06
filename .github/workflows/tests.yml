@@ -87,13 +87,12 @@ jobs:
     - name: Coverage
       run: php -d memory_limit=-1 -d zend.enable_gc=0 vendor/phpunit/phpunit/phpunit --coverage-clover=clover.xml --coverage-text
 
-    - name: Code Climate Test Reporter
+    - name: Code Climate
       uses: paambaati/codeclimate-action@v2.7.4
       env:
         CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
 
-    - name: Coverage
-      if: matrix.coverage == 'true'
+    - name: CodeCov
       run: bash <(curl -s https://codecov.io/bash)
 
   style:
