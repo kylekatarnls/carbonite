@@ -41,7 +41,7 @@ jobs:
       - name: Install dependencies
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: |
-          composer remove --no-update phpstan/phpstan phan/phan vimeo/psalm phpmd/phpmd friendsofphp/php-cs-fixer --no-interaction;
+          composer remove --no-update phpstan/phpstan phan/phan vimeo/psalm phpmd/phpmd --no-interaction;
           composer update --prefer-dist --no-progress --no-suggest ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }} ${{ matrix.php >= 8 && '--ignore-platform-req=php' || '' }};
 
       - name: Run test suite
@@ -81,7 +81,7 @@ jobs:
     - name: Install dependencies
       if: steps.composer-cache.outputs.cache-hit != 'true'
       run: |
-        composer remove --no-update phpstan/phpstan phan/phan vimeo/psalm phpmd/phpmd friendsofphp/php-cs-fixer --no-interaction;
+        composer remove --no-update phpstan/phpstan phan/phan vimeo/psalm phpmd/phpmd --no-interaction;
         composer update --prefer-dist --no-progress --no-suggest ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }} ${{ matrix.php >= 8 && '--ignore-platform-req=php' || '' }};
 
     - name: Coverage
