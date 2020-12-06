@@ -27,7 +27,7 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: json
           tools: composer:v2
-          coverage: false
+          coverage: none
 
       - name: Cache Composer packages
         id: composer-cache
@@ -67,7 +67,7 @@ jobs:
         php-version: ${{ matrix.php }}
         extensions: json
         tools: composer:v2
-        coverage: true
+        coverage: xdebug
 
     - name: Cache Composer packages
       id: composer-cache
@@ -116,7 +116,7 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: ast, json
           tools: composer:v2
-          coverage: false
+          coverage: none
 
       - name: Cache Composer packages
         id: composer-cache
