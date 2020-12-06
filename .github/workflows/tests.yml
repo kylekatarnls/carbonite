@@ -122,14 +122,15 @@ jobs:
         uses: actions/cache@v2
         with:
           path: vendor
-          key: ${{ runner.os }}-code-style-php-${{ matrix.php }}-${{ matrix.setup }}-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-style-php-${{ matrix.php }}-${{ matrix.setup }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-code-style-php-${{ matrix.php }}-${{ matrix.setup }}-
+            ${{ runner.os }}-style-php-${{ matrix.php }}-${{ matrix.setup }}-
 
       - name: Install dependencies
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: |
           composer remove --no-update kylekatarnls/multi-tester phpunit/phpunit --no-interaction;
+          composer require --no-update friendsofphp/php-cs-fixer:^2.16 --no-interaction;
           composer update --prefer-dist --no-progress --no-suggest ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }} ${{ matrix.php >= 8 && '--ignore-platform-req=php' || '' }};
 
       - name: Check style
