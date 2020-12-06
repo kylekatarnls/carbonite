@@ -88,12 +88,9 @@ jobs:
       run: php -d memory_limit=-1 -d zend.enable_gc=0 vendor/phpunit/phpunit/phpunit --coverage-clover=clover.xml --coverage-text
 
     - name: Code Climate Test Reporter
-      uses: aktions/codeclimate-test-reporter@v1
-      with:
-        codeclimate-test-reporter-id: ${{ secrets.CC_TEST_REPORTER_ID }}
-        command: after-build -t clover
+      uses: paambaati/codeclimate-action@v2.7.4
       env:
-        ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
 
     - name: Coverage
       if: matrix.coverage == 'true'
