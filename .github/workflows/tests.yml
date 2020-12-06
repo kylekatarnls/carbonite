@@ -42,7 +42,7 @@ jobs:
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: |
           composer remove --no-update phpstan/phpstan phan/phan vimeo/psalm phpmd/phpmd friendsofphp/php-cs-fixer --no-interaction;
-          composer update --prefer-dist --no-progress --no-suggest ${{ matrix.setup == 'next' && '' || format('--prefer-{0}', matrix.setup) }} ${{ matrix.php >= 8 && '--ignore-platform-req=php' || '' }};
+          composer update --prefer-dist --no-progress --no-suggest ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }} ${{ matrix.php >= 8 && '--ignore-platform-req=php' || '' }};
 
       - name: Run test suite
         run: composer phpunit
@@ -82,7 +82,7 @@ jobs:
       if: steps.composer-cache.outputs.cache-hit != 'true'
       run: |
         composer remove --no-update phpstan/phpstan phan/phan vimeo/psalm phpmd/phpmd friendsofphp/php-cs-fixer --no-interaction;
-        composer update --prefer-dist --no-progress --no-suggest ${{ matrix.setup == 'next' && '' || format('--prefer-{0}', matrix.setup) }} ${{ matrix.php >= 8 && '--ignore-platform-req=php' || '' }};
+        composer update --prefer-dist --no-progress --no-suggest ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }} ${{ matrix.php >= 8 && '--ignore-platform-req=php' || '' }};
 
     - name: Coverage
       run: php -d memory_limit=-1 -d zend.enable_gc=0 vendor/phpunit/phpunit/phpunit --coverage-clover=coverage.xml --coverage-text
@@ -134,7 +134,7 @@ jobs:
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: |
           composer remove --no-update kylekatarnls/multi-tester phpunit/phpunit --no-interaction;
-          composer update --prefer-dist --no-progress --no-suggest ${{ matrix.setup == 'next' && '' || format('--prefer-{0}', matrix.setup) }} ${{ matrix.php >= 8 && '--ignore-platform-req=php' || '' }};
+          composer update --prefer-dist --no-progress --no-suggest ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }} ${{ matrix.php >= 8 && '--ignore-platform-req=php' || '' }};
 
       - name: Check style
         run: composer style-check
