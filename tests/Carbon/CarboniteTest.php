@@ -480,9 +480,9 @@ class CarboniteTest extends TestCase
         self::assertTrue($hasTestNow);
         self::assertSame(0.0, $speed);
         self::assertSame(32.0, abs(round($date->floatDiffInMinutes(new DateTime()))));
-        self::assertSame(32.0 + 5.0 * 60.0, round($nestedDate->floatDiffInMinutes(new DateTime())));
+        self::assertSame(32.0 + 5.0 * 60.0, abs(round($nestedDate->floatDiffInMinutes(new DateTime()))));
         self::assertTrue($hasTestNowAgain);
-        self::assertSame(32.0, round($dateAgain->floatDiffInMinutes(new DateTime())));
+        self::assertSame(32.0, abs(round($dateAgain->floatDiffInMinutes(new DateTime()))));
 
         self::assertFalse(Carbon::hasTestNow());
         self::assertSame(1.0, Carbonite::speed());
