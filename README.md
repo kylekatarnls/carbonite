@@ -3,7 +3,7 @@
 Freeze, accelerate, slow down time and many more with [Carbon](https://carbon.nesbot.com/).
 
 [![Latest Stable Version](https://poser.pugx.org/kylekatarnls/carbonite/v/stable.png)](https://packagist.org/packages/kylekatarnls/carbonite)
-[![Build Status](https://travis-ci.org/kylekatarnls/carbonite.svg?branch=master)](https://travis-ci.org/kylekatarnls/carbonite)
+[![GitHub Actions](https://github.com/kylekatarnls/carbonite/workflows/Tests/badge.svg)](https://github.com/kylekatarnls/carbonite/actions)
 [![Code Climate](https://codeclimate.com/github/kylekatarnls/carbonite/badges/gpa.svg)](https://codeclimate.com/github/kylekatarnls/carbonite)
 [![Test Coverage](https://codeclimate.com/github/kylekatarnls/carbonite/badges/coverage.svg)](https://codeclimate.com/github/kylekatarnls/carbonite/coverage)
 [![Issue Count](https://codeclimate.com/github/kylekatarnls/carbonite/badges/issue_count.svg)](https://codeclimate.com/github/kylekatarnls/carbonite)
