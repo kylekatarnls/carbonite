@@ -32,7 +32,7 @@ class ReflectionCallable
                 $this->method = new ReflectionMethod(...(
                     is_array($test)
                         ? $test
-                        : [$test, method_exists($test, 'getName') ? $test->getName() : 'run']
+                        : [$test, method_exists($test, 'getName') ? $test->getName(false) : 'run']
                 ));
             } catch (ReflectionException $methodException) {
                 throw new InvalidArgumentException(

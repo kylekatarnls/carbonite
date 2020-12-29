@@ -8,6 +8,7 @@ use Carbon\Carbonite;
 use Carbon\CarbonPeriod;
 use Generator;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 use Throwable;
 
 /**
@@ -100,6 +101,9 @@ class DocumentationTest extends TestCase
 
             foreach (get_class_methods($testCase) as $method) {
                 if (preg_match('/^test[A-Z]/', $method)) {
+                    $property = new ReflectionProperty($testCase, 'name');
+                    $property->setAccessible(true);
+                    $property->setValue($testCase, $method);
                     $testCase->setUp();
                     $testCase->$method();
                     $testCase->tearDown();
