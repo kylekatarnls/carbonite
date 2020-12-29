@@ -187,13 +187,23 @@ class CarboniteTest extends TestCase
         self::assertSame(5.0, Carbonite::speed());
         self::assertSame('01:01:20', Carbon::now()->format('H:i:s'));
 
-        Carbonite::mock(null);
-        Carbonite::release();
-        Carbonite::speed(100);
-        $nextSecond = Carbon::now()->addSecond();
-        usleep(10 * 1000);
+        // Retry thrice
+        for ($i = 0; $i < 3; $i++) {
+            Carbonite::mock(null);
+            Carbonite::release();
+            Carbonite::speed(400);
+            $nextSecond = Carbon::now()->addSeconds(2);
+            usleep(10 * 1000);
 
-        self::assertTrue(Carbon::now() > $nextSecond);
+            $nextSecond = $nextSecond->format('Y-m-d H:i:s.u');
+            $now = Carbon::now()->format('Y-m-d H:i:s.u');
+
+            if ($nextSecond > $now) {
+                break;
+            }
+        }
+
+        self::assertGreaterThan($nextSecond, $now);
     }
 
     /**

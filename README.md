@@ -405,6 +405,108 @@ class MyProjectTest extends TestCase
 }
 ```
 
+PHP 8 attributes (or PHPDoc annotations for PHP 7) can also be used for
+convenience. Enable it using `Bespin::up()` on a given test suite:
+
+### PHP 8
+```php
+use Carbon\Bespin;
+use Carbon\Carbon;
+use Carbon\Carbonite;
+use Carbon\Carbonite\Attribute\Freeze;
+use Carbon\Carbonite\Attribute\JumpTo;
+use Carbon\Carbonite\Attribute\Speed;
+use PHPUnit\Framework\TestCase;
+
+class PHP8Test extends TestCase
+{
+    protected function setUp(): void
+    {
+        Bespin::up($this);
+    }
+
+    protected function tearDown(): void
+    {
+        Bespin::down($this);
+    }
+
+    #[Freeze("2019-12-25")]
+    public function testChristmas()
+    {
+        // Here we are the 2019-12-25, time is frozen.
+        self::assertSame('12-25', Carbon::now()->format('m-d'));
+        self::assertSame(0.0, Carbonite::speed());
+    }
+
+    #[JumpTo("2021-01-01")]
+    public function testJanuaryFirst()
+    {
+        // Here we are the 2021-01-01, but time is NOT frozen.
+        self::assertSame('01-01', Carbon::now()->format('m-d'));
+        self::assertSame(1.0, Carbonite::speed());
+    }
+
+    #[Speed(10)]
+    public function testSpeed()
+    {
+        // Here we start from the real date-time, but during
+        // the test, time elapse 10 times faster.
+        self::assertSame(10.0, Carbonite::speed());
+    }
+}
+```
+
+### PHP 7
+```php
+use Carbon\Bespin;
+use Carbon\Carbon;
+use Carbon\Carbonite;
+use Carbon\Carbonite\Attribute\Freeze;
+use Carbon\Carbonite\Attribute\JumpTo;
+use Carbon\Carbonite\Attribute\Speed;
+use PHPUnit\Framework\TestCase;
+
+class PHP7Test extends TestCase
+{
+    protected function setUp(): void
+    {
+        Bespin::up($this);
+    }
+
+    protected function tearDown(): void
+    {
+        Bespin::down($this);
+    }
+
+    /** @Freeze("2019-12-25") */
+    public function testChristmas()
+    {
+        // Here we are the 2019-12-25, time is frozen.
+        self::assertSame('12-25', Carbon::now()->format('m-d'));
+        self::assertSame(0.0, Carbonite::speed());
+    }
+
+    /** @JumpTo("2021-01-01") */
+    public function testJanuaryFirst()
+    {
+        // Here we are the 2021-01-01, but time is NOT frozen.
+        self::assertSame('01-01', Carbon::now()->format('m-d'));
+        self::assertSame(1.0, Carbonite::speed());
+    }
+
+    /** @Speed(10) */
+    public function testSpeed()
+    {
+        // Here we start from the real date-time, but during
+        // the test, time elapse 10 times faster.
+        self::assertSame(10.0, Carbonite::speed());
+    }
+}
+```
+
+Annotations also work with multiline blocks, so you (with both PHPDoc or attributes)
+have in the same test a `@group`, `@dataProvider` or whatever.
+
 ## `fakeAsync()` for PHP
 
 If you're familiar with `fakeAsync()` and `tick()` of Angular testing tools, then you can get the same syntax in

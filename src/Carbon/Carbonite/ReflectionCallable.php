@@ -1,0 +1,75 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Carbon\Carbonite;
+
+use Closure;
+use InvalidArgumentException;
+use ReflectionAttribute;
+use ReflectionException;
+use ReflectionFunction;
+use ReflectionMethod;
+
+class ReflectionCallable
+{
+    /** @var ReflectionMethod|null */
+    protected $method = null;
+
+    /** @var ReflectionFunction|null */
+    protected $function = null;
+
+    public function __construct($test)
+    {
+        try {
+            $this->function = $test instanceof Closure || is_string($test) ? new ReflectionFunction($test) : null;
+        } catch (ReflectionException $functionException) {
+            // noop
+        }
+
+        if (!$this->function) {
+            try {
+                $this->method = new ReflectionMethod(...(
+                    is_array($test)
+                        ? $test
+                        : [$test, method_exists($test, 'getName') ? $test->getName() : 'run']
+                ));
+            } catch (ReflectionException $methodException) {
+                throw new InvalidArgumentException(
+                    'Passed '.(is_object($test) ? get_class($test) : gettype($test)).
+                    ' cannot be resolved by reflection.',
+                    0,
+                    $functionException ?? $methodException
+                );
+            }
+        }
+    }
+
+    /** @return ReflectionMethod|ReflectionFunction */
+    public function getSource(): object
+    {
+        return $this->method ?? $this->function;
+    }
+
+    public function getDocComment(): string
+    {
+        return $this->getSource()->getDocComment() ?: '';
+    }
+
+    public function getFileName(): ?string
+    {
+        return $this->getSource()->getFileName() ?: null;
+    }
+
+    /** @return ReflectionAttribute[] */
+    public function getAttributes(): iterable
+    {
+        $source = $this->getSource();
+
+        if (method_exists($source, 'getAttributes')) {
+            foreach ($source->getAttributes() as $attribute) {
+                yield $attribute;
+            }
+        }
+    }
+}
