@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Carbon\Carbonite;
 
+use Carbon\Carbonite\Attribute\Freeze;
+use Carbon\Carbonite\Attribute\JumpTo;
+use Carbon\Carbonite\Attribute\Speed;
 use Closure;
 use InvalidArgumentException;
 use ReflectionAttribute;
@@ -56,9 +59,15 @@ class ReflectionCallable
         return $this->getSource()->getDocComment() ?: '';
     }
 
-    public function getFileName(): ?string
+    public function getFileContent(): string
     {
-        return $this->getSource()->getFileName() ?: null;
+        $file = $this->getSource()->getFileName() ?: null;
+        $contents = $file ? @file_get_contents($file) : false;
+
+        return $contents
+            ?: implode("\n", array_map(function (string $className): string {
+                return "use $className;";
+            }, [Freeze::class, Speed::class, JumpTo::class]));
     }
 
     /** @return ReflectionAttribute[] */

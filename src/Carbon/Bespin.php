@@ -2,6 +2,7 @@
 
 namespace Carbon;
 
+use Carbon\Carbonite\Attribute\AttributeBase;
 use Carbon\Carbonite\Attribute\Freeze;
 use Carbon\Carbonite\Attribute\JumpTo;
 use Carbon\Carbonite\Attribute\Speed;
@@ -41,7 +42,9 @@ class Bespin
         $method = new ReflectionCallable($test);
 
         foreach ($method->getAttributes() as $attribute) {
-            yield $attribute->newInstance();
+            if (is_a($attribute->getName(), AttributeBase::class, true)) {
+                yield $attribute->newInstance();
+            }
         }
 
         $doc = preg_replace('`^/\s*\*+([\s\S]*)\*/\s*$`', '$1', $method->getDocComment() ?: '');
@@ -49,19 +52,25 @@ class Bespin
         preg_match_all('`^[\t ]*@([^(@\s]+)\(([^)]+)\)`m', $doc, $annotations, PREG_SET_ORDER);
 
         foreach ($annotations as [, $type, $parameters]) {
-            yield @eval(
-                'return new '.static::getTypeFullQualifiedName($method, $type).'('.$parameters.');'
-            );
+            $className = static::getTypeFullQualifiedName($method, $type);
+            $instance = null;
+
+            if (class_exists($className)) {
+                $instance = @eval('return new '.$className.'('.$parameters.');');
+            }
+
+            if ($instance) {
+                yield $instance;
+            }
         }
     }
 
     protected static function getTypeFullQualifiedName(ReflectionCallable $method, string $type): string
     {
         [$baseNameSpace, $nameEnd] = array_pad(explode('\\', $type, 2), 2, '');
-        $file = $method->getFileName();
 
-        if ($file && $baseNameSpace !== '') {
-            $contents = file_get_contents($file) ?: '';
+        if ($baseNameSpace !== '') {
+            $contents = $method->getFileContent();
             $useRegExp = '`^[\t ]*use\s+(\S[^\n]*)\\\\'.preg_quote($baseNameSpace, '`').'\s*;`m';
 
             if (preg_match($useRegExp, $contents, $use)) {
@@ -98,11 +107,14 @@ class Bespin
     protected static function walkElse($test, array $walkers, ?callable $else = null): void
     {
         $count = 0;
+        $walkersByType = [];
 
         foreach ($walkers as $walk) {
-            $expectedType = static::getFirstParameterType($walk);
+            $walkersByType[static::getFirstParameterType($walk)] = $walk;
+        }
 
-            foreach (static::getTestMethods($test) as $instance) {
+        foreach (static::getTestMethods($test) as $instance) {
+            foreach ($walkersByType as $expectedType => $walk) {
                 if (is_a($instance, $expectedType)) {
                     $walk($instance);
                     $count++;

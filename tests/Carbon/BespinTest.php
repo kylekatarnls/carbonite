@@ -28,7 +28,7 @@ use PHPUnit\Framework\TestCase;
  * @covers \Carbon\Carbonite\ReflectionCallable::__construct
  * @covers \Carbon\Carbonite\ReflectionCallable::getAttributes
  * @covers \Carbon\Carbonite\ReflectionCallable::getDocComment
- * @covers \Carbon\Carbonite\ReflectionCallable::getFileName
+ * @covers \Carbon\Carbonite\ReflectionCallable::getFileContent
  * @covers \Carbon\Carbonite\ReflectionCallable::getSource
  */
 class BespinTest extends TestCase
@@ -69,7 +69,7 @@ class BespinTest extends TestCase
         }
 
         self::assertSame('2020-12-05 12:00:00', Carbon::now()->format('Y-m-d H:i:s'));
-        self::assertSame(1.0, Carbonite::speed());
+        self::assertSame(0.0, Carbonite::speed());
     }
 
     public function testNoAttribute(): void
