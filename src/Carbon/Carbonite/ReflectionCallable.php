@@ -48,7 +48,9 @@ class ReflectionCallable
         }
     }
 
-    /** @return ReflectionMethod|ReflectionFunction */
+    /**
+     * @return ReflectionMethod|ReflectionFunction
+     */
     public function getSource(): object
     {
         return $this->method ?? $this->function;
@@ -70,7 +72,9 @@ class ReflectionCallable
             }, [Freeze::class, Speed::class, JumpTo::class]));
     }
 
-    /** @return ReflectionAttribute[] */
+    /**
+     * @return ReflectionAttribute[]
+     */
     public function getAttributes(): iterable
     {
         $source = $this->getSource();

@@ -135,3 +135,5 @@ jobs:
 
       - name: Check style
         run: composer style-check
+        env:
+          PHP_CS_FIXER_IGNORE_ENV: true

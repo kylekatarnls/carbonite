@@ -36,7 +36,11 @@ class Bespin
         return $firstParameter->getName();
     }
 
-    /** @return object[] */
+    /**
+     * @param object|callable|string $test
+     *
+     * @return iterable<object>
+     */
     protected static function getTestMethods($test): iterable
     {
         $method = new ReflectionCallable($test);
