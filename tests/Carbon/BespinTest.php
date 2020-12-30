@@ -5,12 +5,14 @@ namespace Tests\Carbon;
 use Carbon\Bespin;
 use Carbon\Carbon;
 use Carbon\Carbonite;
+// @codingStandardsIgnoreStart
 use Carbon\Carbonite\Attribute\Freeze;
 use Carbon\Carbonite\Attribute\Freeze as Frozen;
 use Carbon\Carbonite\Attribute\JumpTo;
 use Carbon\Carbonite\Attribute\Speed;
 use Carbon\Carbonite\ReflectionCallable;
 use Carbon\Carbonite\{Attribute\Freeze as Froze};
+// @codingStandardsIgnoreEnd
 use DateTimeImmutable;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
