@@ -10,6 +10,7 @@ use DateTime;
 use DateTimeImmutable;
 use Exception;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 
 /**
  * @coversDefaultClass \Carbon\Carbonite
@@ -497,5 +498,18 @@ class CarboniteTest extends TestCase
         self::assertFalse(Carbon::hasTestNow());
         self::assertSame(1.0, Carbonite::speed());
         self::assertSame(0.0, round(Carbon::now()->floatDiffInSeconds(new DateTime()) / 3));
+    }
+
+    /**
+     * @covers ::tibanna
+     */
+    public function testTibannaAutoRegeneration(): void
+    {
+        $property = new ReflectionProperty(Carbonite::class, 'tibanna');
+        $property->setAccessible(true);
+        $property->setValue(Carbonite::class, null);
+
+        Carbonite::freeze('2022-03-15');
+        self::assertSame('2022-03-15', Carbon::now()->format('Y-m-d'));
     }
 }

@@ -16,6 +16,8 @@ use Carbon\Carbonite\{Attribute\Freeze as Froze};
 use DateTimeImmutable;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use stdClass;
+use Tests\Carbon\Fixtures\BadBespin;
 
 /**
  * @covers \Carbon\Bespin::getFirstParameterType
@@ -111,7 +113,7 @@ class BespinTest extends TestCase
         self::assertSame(10.0, Carbonite::speed());
     }
 
-    public function testTest()
+    public function testTest(): void
     {
         $speeds = [];
 
@@ -124,11 +126,27 @@ class BespinTest extends TestCase
         self::assertSame([0.0, 1.0], $speeds);
     }
 
-    public function testUncallableTest()
+    public function testUncallableTest(): void
     {
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('Passed string cannot be resolved by reflection.');
 
         new ReflectionCallable('not-callable');
+    }
+
+    public function testNoParameter(): void
+    {
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('Passed callable should have at least 1 attribute as parameter.');
+
+        BadBespin::callWalk(function () {});
+    }
+
+    public function testWrongTypeHint(): void
+    {
+        self::expectException(InvalidArgumentException::class);
+        self::expectExceptionMessage('First parameter of the callable should be typed as per the expected attribute to filter.');
+
+        BadBespin::callWalk(function ($foo) {});
     }
 }
