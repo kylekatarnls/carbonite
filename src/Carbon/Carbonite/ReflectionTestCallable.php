@@ -79,19 +79,18 @@ class ReflectionTestCallable extends ReflectionCallable
 
         if ($baseNameSpace !== '') {
             $contents = $this->getFileContent();
-            $useRegExp = '`^[\t ]*use\s+(\S[^\n]*)\\\\'.preg_quote($baseNameSpace, '`').'\s*;`m';
+            $quotedNameSpace = preg_quote($baseNameSpace, '`');
 
-            if (preg_match($useRegExp, $contents, $use)) {
-                return '\\'.$use[1].'\\'.$type;
+            if (preg_match("`^
+                [\t ]*use\s+(<?<import>\S[^\n]*)(
+                    \\\\$quotedNameSpace |
+                    \s+(?<as>as)\s+$quotedNameSpace
+                )\s*;
+                `mx", $contents, $use)) {
+                return '\\'.$use['import'].'\\'.(isset($user['as']) ? ($nameEnd === '' ? '' : '\\'.$nameEnd) : $type);
             }
 
-            $useRegExp = '`^[\t ]*use\s+(\S[^\n]*)\s+as\s+'.preg_quote($baseNameSpace, '`').'\s*;`m';
-
-            if (preg_match($useRegExp, $contents, $use)) {
-                return '\\'.$use[1].($nameEnd === '' ? '' : '\\'.$nameEnd);
-            }
-
-            foreach ($this->parseGroupedImports($contents, $baseNameSpace, $nameEnd) as $import) {
+            foreach ($this->getImportFromGroups($contents, $baseNameSpace, $nameEnd) as $import) {
                 return $import;
             }
         }
@@ -99,7 +98,22 @@ class ReflectionTestCallable extends ReflectionCallable
         return $type;
     }
 
-    protected function parseGroupedImports(string $contents, string $baseNameSpace, string $nameEnd): iterable
+    protected function getImportFromGroups(string $contents, string $baseNameSpace, string $nameEnd): iterable
+    {
+        /**
+         * @var string      $use
+         * @var string|null $alias
+         */
+        foreach ($this->parseGroupedImports($contents) as [$use, $alias]) {
+            $chunks = explode('\\', $use);
+
+            if ($alias === $baseNameSpace || end($chunks) === $baseNameSpace) {
+                yield '\\'.$use.($nameEnd === '' ? '' : '\\'.$nameEnd);
+            }
+        }
+    }
+
+    protected function parseGroupedImports(string $contents): iterable
     {
         preg_match_all('`^[\t ]*use\s+(\S[^\n]*){([^}]+)}`m', $contents, $uses, PREG_SET_ORDER);
 
@@ -109,20 +123,11 @@ class ReflectionTestCallable extends ReflectionCallable
          */
         foreach ($uses as [, $base, $imports]) {
             foreach (array_map('trim', explode(',', $imports)) as $import) {
-                /**
-                 * @var string      $use
-                 * @var string|null $alias
-                 */
-                [$use, $alias] = array_pad(
+                yield array_pad(
                     array_map('trim', preg_split('`\sas\s`', $base.$import) ?: []),
                     2,
                     null
                 );
-                $chunks = explode('\\', $use);
-
-                if ($alias === $baseNameSpace || end($chunks) === $baseNameSpace) {
-                    yield '\\'.$use.($nameEnd === '' ? '' : '\\'.$nameEnd);
-                }
             }
         }
     }
