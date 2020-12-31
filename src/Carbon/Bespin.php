@@ -96,7 +96,7 @@ class Bespin
             foreach ($uses as [, $base, $imports]) {
                 foreach (array_map('trim', explode(',', $imports)) as $import) {
                     /**
-                     * @var string $use
+                     * @var string      $use
                      * @var string|null $alias
                      */
                     [$use, $alias] = array_pad(
@@ -118,8 +118,8 @@ class Bespin
 
     /**
      * @param object|callable|string $test
-     * @param callable[] $walkers
-     * @param callable|null $else
+     * @param callable[]             $walkers
+     * @param callable|null          $else
      */
     protected static function walkElse($test, array $walkers, ?callable $else = null): void
     {

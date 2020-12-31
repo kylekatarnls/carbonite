@@ -26,6 +26,7 @@ class ReflectionCallable
      * @param object|callable|string $test
      *
      * @psalm-suppress ArgumentTypeCoercion, PossiblyInvalidArgument, PossiblyInvalidMethodCall
+     * @suppress PhanUndeclaredMethod
      */
     public function __construct($test)
     {
@@ -57,6 +58,7 @@ class ReflectionCallable
      * @return ReflectionMethod|ReflectionFunction
      *
      * @psalm-suppress NullableReturnStatement, InvalidNullableReturnType
+     * @suppress PhanTypeMismatchReturnNullable
      */
     public function getSource(): object
     {
