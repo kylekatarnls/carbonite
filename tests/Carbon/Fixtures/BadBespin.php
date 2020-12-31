@@ -8,6 +8,8 @@ class BadBespin extends Bespin
 {
     public static function callWalk(callable $callback): void
     {
-        static::walkElse(function () {}, [$callback]);
+        static::walkElse(function () {
+            // noop
+        }, [$callback]);
     }
 }

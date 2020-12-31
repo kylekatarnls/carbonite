@@ -5,18 +5,18 @@ namespace Tests\Carbon;
 use Carbon\Bespin;
 use Carbon\Carbon;
 use Carbon\Carbonite;
++use Carbon\Carbonite\Attribute\AttributeBase;
 // @codingStandardsIgnoreStart
 use Carbon\Carbonite\Attribute\Freeze;
 use Carbon\Carbonite\Attribute\Freeze as Frozen;
 use Carbon\Carbonite\Attribute\JumpTo;
 use Carbon\Carbonite\Attribute\Speed;
 use Carbon\Carbonite\ReflectionCallable;
-use Carbon\Carbonite\{Attribute\AttributeBase, Attribute\Freeze as Froze};
+use Carbon\Carbonite\{Attribute\Freeze as Froze};
 // @codingStandardsIgnoreEnd
 use DateTimeImmutable;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use stdClass;
 use Tests\Carbon\Fixtures\BadBespin;
 
 /**
@@ -127,9 +127,9 @@ class BespinTest extends TestCase
     }
 
     /**
-     * @covers \Carbon\Carbonite\Attribute\Freeze
-     * @covers \Carbon\Carbonite\Attribute\JumpTo
-     * @covers \Carbon\Carbonite\Attribute\Speed
+     * @covers \Carbon\Carbonite\Attribute\Freeze::__construct
+     * @covers \Carbon\Carbonite\Attribute\JumpTo::__construct
+     * @covers \Carbon\Carbonite\Attribute\Speed::__construct
      */
     public function testAttributesAvailability(): void
     {
@@ -151,7 +151,9 @@ class BespinTest extends TestCase
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('Passed callable should have at least 1 attribute as parameter.');
 
-        BadBespin::callWalk(function () {});
+        BadBespin::callWalk(function () {
+            // noop
+        });
     }
 
     public function testWrongTypeHint(): void
@@ -159,6 +161,8 @@ class BespinTest extends TestCase
         self::expectException(InvalidArgumentException::class);
         self::expectExceptionMessage('First parameter of the callable should be typed as per the expected attribute to filter.');
 
-        BadBespin::callWalk(function ($foo) {});
+        BadBespin::callWalk(function ($foo) {
+            // noop
+        });
     }
 }
