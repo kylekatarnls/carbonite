@@ -101,7 +101,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: [7.4]
+        php: [8.0]
         setup: ['stable']
 
     name: Style - PHP ${{ matrix.php }} - ${{ matrix.setup }}
@@ -135,3 +135,5 @@ jobs:
 
       - name: Check style
         run: composer style-check
+        env:
+          PHP_CS_FIXER_IGNORE_ENV: true

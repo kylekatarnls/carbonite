@@ -286,7 +286,7 @@ Carbonite::do('2020-12-23', static function () {
     usleep(200);
     // Still the same output as time is frozen inside the callback
     echo Carbon::now()->format('Y-m-d H:i:s.u'); // output: 2020-12-23 00:00:00.000000
-echo Carbonite::speed(); // output: 0
+    echo Carbonite::speed(); // output: 0
 });
 // Now the speed is 1.5 on 2000-01-01 again
 echo Carbon::now()->format('Y-m-d'); // output: 2000-01-01
@@ -314,7 +314,7 @@ Carbonite::doNow(static function () {
     usleep(200);
     // Still the same output as time is frozen inside the callback
     echo Carbon::now()->format('Y-m-d H:i:s.u'); // output: 2020-09-17 20:00:00.000000
-echo Carbonite::speed(); // output: 0
+    echo Carbonite::speed(); // output: 0
 });
 // Now the speed is 1 again
 echo Carbonite::speed(); // output: 1
@@ -404,6 +404,130 @@ class MyProjectTest extends TestCase
     }
 }
 ```
+
+PHP 8 attributes (or PHPDoc annotations for PHP 7) can also be used for
+convenience. Enable it using `Bespin::up()` on a given test suite:
+
+### PHP 8
+```php
+use Carbon\Bespin;
+use Carbon\Carbon;
+use Carbon\Carbonite;
+use Carbon\Carbonite\Attribute\Freeze;
+use Carbon\Carbonite\Attribute\JumpTo;
+use Carbon\Carbonite\Attribute\Speed;
+use PHPUnit\Framework\TestCase;
+
+class PHP8Test extends TestCase
+{
+    protected function setUp(): void
+    {
+        // Will handle attributes on each method before running it
+        Bespin::up($this);
+    }
+
+    protected function tearDown(): void
+    {
+        // Release the time after each test
+        Bespin::down();
+    }
+
+    #[Freeze("2019-12-25")]
+    public function testChristmas()
+    {
+        // Here we are the 2019-12-25, time is frozen.
+        self::assertSame('12-25', Carbon::now()->format('m-d'));
+        self::assertSame(0.0, Carbonite::speed());
+    }
+
+    #[JumpTo("2021-01-01")]
+    public function testJanuaryFirst()
+    {
+        // Here we are the 2021-01-01, but time is NOT frozen.
+        self::assertSame('01-01', Carbon::now()->format('m-d'));
+        self::assertSame(1.0, Carbonite::speed());
+    }
+
+    #[Speed(10)]
+    public function testSpeed()
+    {
+        // Here we start from the real date-time, but during
+        // the test, time elapse 10 times faster.
+        self::assertSame(10.0, Carbonite::speed());
+    }
+
+    #[Release()]
+    public function testRelease()
+    {
+        // If no attributes have been used, Bespin::up() will use:
+        // Carbonite::freeze('now')
+        // But you can still use @Release() to get a test with
+        // real time
+    }
+}
+```
+
+### PHP 7
+```php
+use Carbon\Bespin;
+use Carbon\Carbon;
+use Carbon\Carbonite;
+use Carbon\Carbonite\Attribute\Freeze;
+use Carbon\Carbonite\Attribute\JumpTo;
+use Carbon\Carbonite\Attribute\Speed;
+use PHPUnit\Framework\TestCase;
+
+class PHP7Test extends TestCase
+{
+    protected function setUp(): void
+    {
+        // Will handle annotations on each method before running it
+        Bespin::up($this);
+    }
+
+    protected function tearDown(): void
+    {
+        // Release the time after each test
+        Bespin::down();
+    }
+
+    /** @Freeze("2019-12-25") */
+    public function testChristmas()
+    {
+        // Here we are the 2019-12-25, time is frozen.
+        self::assertSame('12-25', Carbon::now()->format('m-d'));
+        self::assertSame(0.0, Carbonite::speed());
+    }
+
+    /** @JumpTo("2021-01-01") */
+    public function testJanuaryFirst()
+    {
+        // Here we are the 2021-01-01, but time is NOT frozen.
+        self::assertSame('01-01', Carbon::now()->format('m-d'));
+        self::assertSame(1.0, Carbonite::speed());
+    }
+
+    /** @Speed(10) */
+    public function testSpeed()
+    {
+        // Here we start from the real date-time, but during
+        // the test, time elapse 10 times faster.
+        self::assertSame(10.0, Carbonite::speed());
+    }
+
+    /** @Release() */
+    public function testRelease()
+    {
+        // If no annotations have been used, Bespin::up() will use:
+        // Carbonite::freeze('now')
+        // But you can still use @Release() to get a test with
+        // real time
+    }
+}
+```
+
+Annotations also work with multiline blocks, so you (with both PHPDoc or attributes)
+have in the same test a `@group`, `@dataProvider` or whatever.
 
 ## `fakeAsync()` for PHP
 
