@@ -91,32 +91,39 @@ class ReflectionTestCallable extends ReflectionCallable
                 return '\\'.$use[1].($nameEnd === '' ? '' : '\\'.$nameEnd);
             }
 
-            preg_match_all('`^[\t ]*use\s+(\S[^\n]*)\{([^}]+)}`m', $contents, $uses, PREG_SET_ORDER);
-
-            /**
-             * @var string $base
-             * @var string $imports
-             */
-            foreach ($uses as [, $base, $imports]) {
-                foreach (array_map('trim', explode(',', $imports)) as $import) {
-                    /**
-                     * @var string      $use
-                     * @var string|null $alias
-                     */
-                    [$use, $alias] = array_pad(
-                        array_map('trim', preg_split('`\sas\s`', $base.$import) ?: []),
-                        2,
-                        null
-                    );
-                    $chunks = explode('\\', $use);
-
-                    if ($alias === $baseNameSpace || end($chunks) === $baseNameSpace) {
-                        return '\\'.$use.($nameEnd === '' ? '' : '\\'.$nameEnd);
-                    }
-                }
+            foreach ($this->parseGroupedImports($contents, $baseNameSpace, $nameEnd) as $import) {
+                return $import;
             }
         }
 
         return $type;
+    }
+
+    protected function parseGroupedImports(string $contents, string $baseNameSpace, string $nameEnd): iterable
+    {
+        preg_match_all('`^[\t ]*use\s+(\S[^\n]*){([^}]+)}`m', $contents, $uses, PREG_SET_ORDER);
+
+        /**
+         * @var string $base
+         * @var string $imports
+         */
+        foreach ($uses as [, $base, $imports]) {
+            foreach (array_map('trim', explode(',', $imports)) as $import) {
+                /**
+                 * @var string      $use
+                 * @var string|null $alias
+                 */
+                [$use, $alias] = array_pad(
+                    array_map('trim', preg_split('`\sas\s`', $base.$import) ?: []),
+                    2,
+                    null
+                );
+                $chunks = explode('\\', $use);
+
+                if ($alias === $baseNameSpace || end($chunks) === $baseNameSpace) {
+                    yield '\\'.$use.($nameEnd === '' ? '' : '\\'.$nameEnd);
+                }
+            }
+        }
     }
 }

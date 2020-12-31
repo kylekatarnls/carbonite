@@ -32,10 +32,11 @@ use PHPUnit\Framework\TestCase;
  * @covers \Carbon\Carbonite\ReflectionCallable::getSource
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUps
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAttributesAndAnnotations
- * @covers \Carbon\Carbonite\ReflectionTestCallable::getAttributes
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAttributes
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAnnotations
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAnnotationInstance
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getTypeFullQualifiedName
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::parseGroupedImports
  */
 class BespinTest extends TestCase
 {
