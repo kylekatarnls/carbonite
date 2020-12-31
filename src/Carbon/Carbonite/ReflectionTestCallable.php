@@ -21,7 +21,7 @@ class ReflectionTestCallable extends ReflectionCallable
     }
 
     /**
-     * @return iterable<UpInterface>
+     * @return iterable<UpInterface|object>
      */
     public function getAttributesAndAnnotations(): iterable
     {
@@ -30,7 +30,7 @@ class ReflectionTestCallable extends ReflectionCallable
     }
 
     /**
-     * @return iterable<UpInterface>
+     * @return iterable<UpInterface|object>
      */
     public function getAnnotations(): iterable
     {
@@ -48,7 +48,7 @@ class ReflectionTestCallable extends ReflectionCallable
     }
 
     /**
-     * @return iterable<UpInterface>
+     * @return iterable<UpInterface|object>
      */
     public function getAttributes(): iterable
     {

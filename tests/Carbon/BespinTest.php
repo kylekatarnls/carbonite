@@ -194,7 +194,10 @@ class BespinTest extends TestCase
                 return \Carbon\Carbon::now()->dayName;
             }
 
-            /** @Freeze('Tuesday') */
+            /**
+             * @Freeze('Tuesday')
+             * @Other('should not break')
+             */
             public function second(): string
             {
                 return \Carbon\Carbon::now()->dayName;
