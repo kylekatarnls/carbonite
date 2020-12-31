@@ -36,6 +36,7 @@ use PHPUnit\Framework\TestCase;
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAnnotations
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAnnotationInstance
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getTypeFullQualifiedName
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getImportFromGroups
  * @covers \Carbon\Carbonite\ReflectionTestCallable::parseGroupedImports
  */
 class BespinTest extends TestCase
