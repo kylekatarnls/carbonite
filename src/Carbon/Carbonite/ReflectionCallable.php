@@ -22,6 +22,11 @@ class ReflectionCallable
     /** @var ReflectionFunction|null */
     protected $function = null;
 
+    /**
+     * @param object|callable|string $test
+     *
+     * @psalm-suppress ArgumentTypeCoercion, PossiblyInvalidArgument, PossiblyInvalidMethodCall
+     */
     public function __construct($test)
     {
         try {
@@ -50,6 +55,8 @@ class ReflectionCallable
 
     /**
      * @return ReflectionMethod|ReflectionFunction
+     *
+     * @psalm-suppress NullableReturnStatement, InvalidNullableReturnType
      */
     public function getSource(): object
     {
@@ -73,7 +80,7 @@ class ReflectionCallable
     }
 
     /**
-     * @return ReflectionAttribute[]
+     * @return iterable<ReflectionAttribute>
      */
     public function getAttributes(): iterable
     {

@@ -89,8 +89,16 @@ class Bespin
 
             preg_match_all('`^[\t ]*use\s+(\S[^\n]*)\{([^}]+)}`m', $contents, $uses, PREG_SET_ORDER);
 
+            /**
+             * @var string $base
+             * @var string $imports
+             */
             foreach ($uses as [, $base, $imports]) {
                 foreach (array_map('trim', explode(',', $imports)) as $import) {
+                    /**
+                     * @var string $use
+                     * @var string|null $alias
+                     */
                     [$use, $alias] = array_pad(
                         array_map('trim', preg_split('`\sas\s`', $base.$import) ?: []),
                         2,
@@ -108,6 +116,11 @@ class Bespin
         return $type;
     }
 
+    /**
+     * @param object|callable|string $test
+     * @param callable[] $walkers
+     * @param callable|null $else
+     */
     protected static function walkElse($test, array $walkers, ?callable $else = null): void
     {
         $count = 0;
@@ -131,6 +144,9 @@ class Bespin
         }
     }
 
+    /**
+     * @param object|callable|string $test
+     */
     public static function up($test): void
     {
         static::walkElse(
@@ -152,6 +168,9 @@ class Bespin
         );
     }
 
+    /**
+     * @param object|callable|string $test
+     */
     public static function down($test): void
     {
         static::walkElse(
@@ -163,6 +182,11 @@ class Bespin
         );
     }
 
+    /**
+     * @param callable $test
+     *
+     * @return mixed
+     */
     public static function test(callable $test)
     {
         static::up($test);
