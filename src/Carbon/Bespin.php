@@ -2,16 +2,8 @@
 
 namespace Carbon;
 
-use Carbon\Carbonite\Attribute\AttributeBase;
-use Carbon\Carbonite\Attribute\Freeze;
-use Carbon\Carbonite\Attribute\JumpTo;
-use Carbon\Carbonite\Attribute\Speed;
 use Carbon\Carbonite\Attribute\UpInterface;
 use Carbon\Carbonite\ReflectionCallable;
-use Closure;
-use InvalidArgumentException;
-use ReflectionFunction;
-use ReflectionNamedType;
 
 class Bespin
 {
