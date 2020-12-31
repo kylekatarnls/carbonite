@@ -6,6 +6,7 @@ use Carbon\Carbonite\Attribute\AttributeBase;
 use Carbon\Carbonite\Attribute\Freeze;
 use Carbon\Carbonite\Attribute\JumpTo;
 use Carbon\Carbonite\Attribute\Speed;
+use Carbon\Carbonite\Attribute\UpInterface;
 use Carbon\Carbonite\ReflectionCallable;
 use Closure;
 use InvalidArgumentException;
@@ -14,39 +15,17 @@ use ReflectionNamedType;
 
 class Bespin
 {
-    protected static function getFirstParameterType(callable $callable): string
-    {
-        $callable = Closure::fromCallable($callable);
-        $parameters = (new ReflectionFunction($callable))->getParameters();
-
-        if (!count($parameters)) {
-            throw new InvalidArgumentException(
-                'Passed callable should have at least 1 attribute as parameter.'
-            );
-        }
-
-        $firstParameter = $parameters[0]->getType();
-
-        if (!$firstParameter instanceof ReflectionNamedType) {
-            throw new InvalidArgumentException(
-                'First parameter of the callable should be typed as per the expected attribute to filter.'
-            );
-        }
-
-        return $firstParameter->getName();
-    }
-
     /**
      * @param object|callable|string $test
      *
-     * @return iterable<object>
+     * @return iterable<UpInterface>
      */
     protected static function getTestMethods($test): iterable
     {
         $method = new ReflectionCallable($test);
 
         foreach ($method->getAttributes() as $attribute) {
-            if (is_a($attribute->getName(), AttributeBase::class, true)) {
+            if (is_a($attribute->getName(), UpInterface::class, true)) {
                 yield $attribute->newInstance();
             }
         }
@@ -59,7 +38,7 @@ class Bespin
             $className = static::getTypeFullQualifiedName($method, $type);
             $instance = null;
 
-            if (class_exists($className)) {
+            if (class_exists($className) && is_a($className, UpInterface::class, true)) {
                 $instance = @eval('return new '.$className.'('.$parameters.');');
             }
 
@@ -118,68 +97,26 @@ class Bespin
 
     /**
      * @param object|callable|string $test
-     * @param callable[]             $walkers
-     * @param callable|null          $else
-     */
-    protected static function walkElse($test, array $walkers, ?callable $else = null): void
-    {
-        $count = 0;
-        $walkersByType = [];
-
-        foreach ($walkers as $walk) {
-            $walkersByType[static::getFirstParameterType($walk)] = $walk;
-        }
-
-        foreach (static::getTestMethods($test) as $instance) {
-            foreach ($walkersByType as $expectedType => $walk) {
-                if (is_a($instance, $expectedType)) {
-                    $walk($instance);
-                    $count++;
-                }
-            }
-        }
-
-        if ($else && !$count) {
-            $else();
-        }
-    }
-
-    /**
-     * @param object|callable|string $test
      */
     public static function up($test): void
     {
-        static::walkElse(
-            $test,
-            [
-                static function (Freeze $attribute): void {
-                    Carbonite::freeze(...$attribute->getArguments());
-                },
-                static function (Speed $attribute): void {
-                    Carbonite::speed(...$attribute->getArguments());
-                },
-                static function (JumpTo $attribute): void {
-                    Carbonite::jumpTo(...$attribute->getArguments());
-                },
-            ],
-            static function (): void {
-                Carbonite::freeze();
+        $count = 0;
+
+        foreach (static::getTestMethods($test) as $instance) {
+            if ($instance instanceof UpInterface) {
+                $instance->up();
+                $count++;
             }
-        );
+        }
+
+        if (!$count) {
+            Carbonite::freeze();
+        }
     }
 
-    /**
-     * @param object|callable|string $test
-     */
-    public static function down($test): void
+    public static function down(): void
     {
-        static::walkElse(
-            $test,
-            [],
-            static function (): void {
-                Carbonite::release();
-            }
-        );
+        Carbonite::release();
     }
 
     /**
@@ -191,7 +128,7 @@ class Bespin
     {
         static::up($test);
         $result = $test();
-        static::down($test);
+        static::down();
 
         return $result;
     }

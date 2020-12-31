@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Carbon\Carbonite\Attribute;
 
-abstract class AttributeBase
+abstract class AttributeBase implements UpInterface
 {
     /** @var mixed[] */
     protected $arguments;

@@ -10,10 +10,10 @@ use Attribute;
 use Carbon\Carbonite;
 
 #[Attribute]
-class Freeze extends AttributeBase
+class Release extends AttributeBase
 {
     public function up(): void
     {
-        Carbonite::freeze(...$this->getArguments());
+        Carbonite::release();
     }
 }

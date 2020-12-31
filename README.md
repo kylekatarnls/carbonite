@@ -422,11 +422,13 @@ class PHP8Test extends TestCase
 {
     protected function setUp(): void
     {
+        // Will handle attributes on each method before running it
         Bespin::up($this);
     }
 
     protected function tearDown(): void
     {
+        // Release the time after each test
         Bespin::down($this);
     }
 
@@ -453,6 +455,15 @@ class PHP8Test extends TestCase
         // the test, time elapse 10 times faster.
         self::assertSame(10.0, Carbonite::speed());
     }
+
+    #[Release()]
+    public function testRelease()
+    {
+        // If no attributes have been used, Bespin::up() will use:
+        // Carbonite::freeze('now')
+        // But you can still use @Release() to get a test with
+        // real time
+    }
 }
 ```
 
@@ -470,12 +481,14 @@ class PHP7Test extends TestCase
 {
     protected function setUp(): void
     {
+        // Will handle annotations on each method before running it
         Bespin::up($this);
     }
 
     protected function tearDown(): void
     {
-        Bespin::down($this);
+        // Release the time after each test
+        Bespin::down();
     }
 
     /** @Freeze("2019-12-25") */
@@ -500,6 +513,15 @@ class PHP7Test extends TestCase
         // Here we start from the real date-time, but during
         // the test, time elapse 10 times faster.
         self::assertSame(10.0, Carbonite::speed());
+    }
+
+    /** @Release() */
+    public function testRelease()
+    {
+        // If no annotations have been used, Bespin::up() will use:
+        // Carbonite::freeze('now')
+        // But you can still use @Release() to get a test with
+        // real time
     }
 }
 ```

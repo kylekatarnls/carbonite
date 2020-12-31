@@ -5,25 +5,24 @@ namespace Tests\Carbon;
 use Carbon\Bespin;
 use Carbon\Carbon;
 use Carbon\Carbonite;
-use Carbon\Carbonite\Attribute\AttributeBase;
 // @codingStandardsIgnoreStart
 use Carbon\Carbonite\Attribute\Freeze;
 use Carbon\Carbonite\Attribute\Freeze as Frozen;
 use Carbon\Carbonite\Attribute\JumpTo;
+use Carbon\Carbonite\Attribute\Release;
 use Carbon\Carbonite\Attribute\Speed;
+use Carbon\Carbonite\Attribute\UpInterface;
 use Carbon\Carbonite\ReflectionCallable;
 use Carbon\Carbonite\{Attribute\Freeze as Froze};
 // @codingStandardsIgnoreEnd
 use DateTimeImmutable;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Tests\Carbon\Fixtures\BadBespin;
 
 /**
  * @covers \Carbon\Bespin::getFirstParameterType
  * @covers \Carbon\Bespin::getTestMethods
  * @covers \Carbon\Bespin::getTypeFullQualifiedName
- * @covers \Carbon\Bespin::walkElse
  * @covers \Carbon\Bespin::up
  * @covers \Carbon\Bespin::down
  * @covers \Carbon\Bespin::test
@@ -127,15 +126,35 @@ class BespinTest extends TestCase
     }
 
     /**
-     * @covers \Carbon\Carbonite\Attribute\Freeze::__construct
-     * @covers \Carbon\Carbonite\Attribute\JumpTo::__construct
-     * @covers \Carbon\Carbonite\Attribute\Speed::__construct
+     * @covers \Carbon\Carbonite\Attribute\Freeze::up
+     * @covers \Carbon\Carbonite\Attribute\JumpTo::up
+     * @covers \Carbon\Carbonite\Attribute\Speed::up
+     * @covers \Carbon\Carbonite\Attribute\Release::up
      */
     public function testAttributesAvailability(): void
     {
-        self::assertInstanceOf(AttributeBase::class, new Freeze());
-        self::assertInstanceOf(AttributeBase::class, new JumpTo());
-        self::assertInstanceOf(AttributeBase::class, new Speed());
+        $release = new Release();
+        self::assertInstanceOf(UpInterface::class, $release);
+        $release->up();
+        self::assertSame(1.0, Carbonite::speed());
+
+        $freeze = new Freeze('2000-01-01');
+        self::assertInstanceOf(UpInterface::class, $freeze);
+        $freeze->up();
+        self::assertSame(0.0, Carbonite::speed());
+        self::assertSame('2000-01-01', Carbon::now()->format('Y-m-d'));
+
+        $speed = new Speed(2);
+        self::assertInstanceOf(UpInterface::class, $speed);
+        $speed->up();
+        self::assertSame(2.0, Carbonite::speed());
+        self::assertSame('2000-01-01', Carbon::now()->format('Y-m-d'));
+
+        $jumpTo = new JumpTo('2020-02-20');
+        self::assertInstanceOf(UpInterface::class, $jumpTo);
+        $jumpTo->up();
+        self::assertSame(2.0, Carbonite::speed());
+        self::assertSame('2020-02-20', Carbon::now()->format('Y-m-d'));
     }
 
     public function testUncallableTest(): void
@@ -146,29 +165,9 @@ class BespinTest extends TestCase
         new ReflectionCallable('not-callable');
     }
 
-    public function testNoParameter(): void
-    {
-        self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('Passed callable should have at least 1 attribute as parameter.');
-
-        BadBespin::callWalk(function () {
-            // noop
-        });
-    }
-
-    public function testWrongTypeHint(): void
-    {
-        self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('First parameter of the callable should be typed as per the expected attribute to filter.');
-
-        BadBespin::callWalk(function ($foo) {
-            // noop
-        });
-    }
-
     public function testMethodArrayDefinition(): void
     {
-        $class = new class {
+        $class = new class() {
             /** @Freeze('Monday') */
             public function first(): string
             {
@@ -185,7 +184,7 @@ class BespinTest extends TestCase
         self::assertSame('Monday', Bespin::test([$class, 'first']));
         self::assertSame('Tuesday', Bespin::test([$class, 'second']));
 
-        $class = eval("return new class {
+        $class = eval("return new class() {
             /** @Freeze('Monday') */
             public function first(): string
             {
