@@ -11,7 +11,7 @@ use Carbon\Carbonite\Attribute\Freeze as Frozen;
 use Carbon\Carbonite\Attribute\JumpTo;
 use Carbon\Carbonite\Attribute\Speed;
 use Carbon\Carbonite\ReflectionCallable;
-use Carbon\Carbonite\{Attribute\Freeze as Froze};
+use Carbon\Carbonite\{Attribute\AttributeBase, Attribute\Freeze as Froze};
 // @codingStandardsIgnoreEnd
 use DateTimeImmutable;
 use InvalidArgumentException;
@@ -124,6 +124,18 @@ class BespinTest extends TestCase
         $speeds[] = Carbonite::speed();
 
         self::assertSame([0.0, 1.0], $speeds);
+    }
+
+    /**
+     * @covers \Carbon\Carbonite\Attribute\Freeze
+     * @covers \Carbon\Carbonite\Attribute\JumpTo
+     * @covers \Carbon\Carbonite\Attribute\Speed
+     */
+    public function testAttributesAvailability(): void
+    {
+        self::assertInstanceOf(AttributeBase::class, new Freeze());
+        self::assertInstanceOf(AttributeBase::class, new JumpTo());
+        self::assertInstanceOf(AttributeBase::class, new Speed());
     }
 
     public function testUncallableTest(): void
