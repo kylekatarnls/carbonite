@@ -13,7 +13,7 @@ class ReflectionTestCallable extends ReflectionCallable
      */
     public function getUps(): iterable
     {
-        foreach ($this->getAttributesAndAnnotations() as $instance) {
+        foreach ($this->getUpAttributesAndAnnotations() as $instance) {
             if ($instance instanceof UpInterface) {
                 yield $instance;
             }
@@ -23,23 +23,23 @@ class ReflectionTestCallable extends ReflectionCallable
     /**
      * @return iterable<UpInterface|object>
      */
-    public function getAttributesAndAnnotations(): iterable
+    public function getUpAttributesAndAnnotations(): iterable
     {
-        yield from $this->getAttributes();
-        yield from $this->getAnnotations();
+        yield from $this->getUpAttributes();
+        yield from $this->getUpAnnotations();
     }
 
     /**
      * @return iterable<UpInterface|object>
      */
-    public function getAnnotations(): iterable
+    public function getUpAnnotations(): iterable
     {
         $doc = preg_replace('`^/\s*\*+([\s\S]*)\*/\s*$`', '$1', $this->getDocComment() ?: '');
         $doc = trim(preg_replace('`^[\t ]*\*`m', '', $doc));
         preg_match_all('`^[\t ]*@([^(@\s]+)\(([^)]+)\)`m', $doc, $annotations, PREG_SET_ORDER);
 
         foreach ($annotations as [, $type, $parameters]) {
-            $instance = $this->getAnnotationInstance($type, $parameters);
+            $instance = $this->getUpAnnotationInstance($type, $parameters);
 
             if ($instance) {
                 yield $instance;
@@ -50,9 +50,9 @@ class ReflectionTestCallable extends ReflectionCallable
     /**
      * @return iterable<UpInterface|object>
      */
-    public function getAttributes(): iterable
+    public function getUpAttributes(): iterable
     {
-        foreach (parent::getAttributes() as $attribute) {
+        foreach ($this->getAttributes() as $attribute) {
             if (is_a($attribute->getName(), UpInterface::class, true)) {
                 yield $attribute->newInstance();
             }
@@ -62,7 +62,7 @@ class ReflectionTestCallable extends ReflectionCallable
     /**
      * @return UpInterface|object|null
      */
-    protected function getAnnotationInstance(string $type, string $parameters): ?object
+    protected function getUpAnnotationInstance(string $type, string $parameters): ?object
     {
         $className = $this->getTypeFullQualifiedName($type);
 

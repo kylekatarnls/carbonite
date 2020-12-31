@@ -31,10 +31,10 @@ use PHPUnit\Framework\TestCase;
  * @covers \Carbon\Carbonite\ReflectionCallable::getFileContent
  * @covers \Carbon\Carbonite\ReflectionCallable::getSource
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUps
- * @covers \Carbon\Carbonite\ReflectionTestCallable::getAttributesAndAnnotations
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAttributesAndAnnotations
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getAttributes
- * @covers \Carbon\Carbonite\ReflectionTestCallable::getAnnotations
- * @covers \Carbon\Carbonite\ReflectionTestCallable::getAnnotationInstance
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAnnotations
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAnnotationInstance
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getTypeFullQualifiedName
  */
 class BespinTest extends TestCase
