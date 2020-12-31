@@ -5,7 +5,7 @@ namespace Tests\Carbon;
 use Carbon\Bespin;
 use Carbon\Carbon;
 use Carbon\Carbonite;
-+use Carbon\Carbonite\Attribute\AttributeBase;
+use Carbon\Carbonite\Attribute\AttributeBase;
 // @codingStandardsIgnoreStart
 use Carbon\Carbonite\Attribute\Freeze;
 use Carbon\Carbonite\Attribute\Freeze as Frozen;
@@ -164,5 +164,42 @@ class BespinTest extends TestCase
         BadBespin::callWalk(function ($foo) {
             // noop
         });
+    }
+
+    public function testMethodArrayDefinition(): void
+    {
+        $class = new class {
+            /** @Freeze('Monday') */
+            public function first(): string
+            {
+                return \Carbon\Carbon::now()->dayName;
+            }
+
+            /** @Freeze('Tuesday') */
+            public function second(): string
+            {
+                return \Carbon\Carbon::now()->dayName;
+            }
+        };
+
+        self::assertSame('Monday', Bespin::test([$class, 'first']));
+        self::assertSame('Tuesday', Bespin::test([$class, 'second']));
+
+        $class = eval("return new class {
+            /** @Freeze('Monday') */
+            public function first(): string
+            {
+                return \Carbon\Carbon::now()->dayName;
+            }
+
+            /** @Freeze('Tuesday') */
+            public function second(): string
+            {
+                return \Carbon\Carbon::now()->dayName;
+            }
+        };");
+
+        self::assertSame('Monday', Bespin::test([$class, 'first']));
+        self::assertSame('Tuesday', Bespin::test([$class, 'second']));
     }
 }
