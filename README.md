@@ -429,7 +429,7 @@ class PHP8Test extends TestCase
     protected function tearDown(): void
     {
         // Release the time after each test
-        Bespin::down($this);
+        Bespin::down();
     }
 
     #[Freeze("2019-12-25")]
