@@ -20,9 +20,6 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Carbon\Bespin::getFirstParameterType
- * @covers \Carbon\Bespin::getTestMethods
- * @covers \Carbon\Bespin::getTypeFullQualifiedName
  * @covers \Carbon\Bespin::up
  * @covers \Carbon\Bespin::down
  * @covers \Carbon\Bespin::test
@@ -33,6 +30,12 @@ use PHPUnit\Framework\TestCase;
  * @covers \Carbon\Carbonite\ReflectionCallable::getDocComment
  * @covers \Carbon\Carbonite\ReflectionCallable::getFileContent
  * @covers \Carbon\Carbonite\ReflectionCallable::getSource
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getUps
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getAttributesAndAnnotations
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getAttributes
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getAnnotations
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getAnnotationInstance
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getTypeFullQualifiedName
  */
 class BespinTest extends TestCase
 {
