@@ -81,13 +81,17 @@ class ReflectionTestCallable extends ReflectionCallable
             $contents = $this->getFileContent();
             $quotedNameSpace = preg_quote($baseNameSpace, '`');
 
-            if (preg_match("`^
-                [\t ]*use\s+(<?<import>\S[^\n]*)(
+            if (preg_match(
+                "`^
+                [\t ]*use\s+(?<import>\S[^\n]*)(
                     \\\\$quotedNameSpace |
                     \s+(?<as>as)\s+$quotedNameSpace
                 )\s*;
-                `mx", $contents, $use)) {
-                return '\\'.$use['import'].'\\'.(isset($user['as']) ? ($nameEnd === '' ? '' : '\\'.$nameEnd) : $type);
+                `mx",
+                $contents,
+                $use
+            )) {
+                return '\\'.$use['import'].(isset($use['as']) ? ($nameEnd === '' ? '' : '\\'.$nameEnd) : '\\'.$type);
             }
 
             foreach ($this->getImportFromGroups($contents, $baseNameSpace, $nameEnd) as $import) {
