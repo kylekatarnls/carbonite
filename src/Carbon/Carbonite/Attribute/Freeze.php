@@ -10,7 +10,7 @@ use Attribute;
 use Carbon\Carbonite;
 
 #[Attribute]
-class Freeze extends AttributeBase
+class Freeze extends AttributeBase // @codeCoverageIgnore
 {
     public function up(): void
     {

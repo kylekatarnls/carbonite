@@ -20,9 +20,6 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \Carbon\Bespin::getFirstParameterType
- * @covers \Carbon\Bespin::getTestMethods
- * @covers \Carbon\Bespin::getTypeFullQualifiedName
  * @covers \Carbon\Bespin::up
  * @covers \Carbon\Bespin::down
  * @covers \Carbon\Bespin::test
@@ -33,6 +30,14 @@ use PHPUnit\Framework\TestCase;
  * @covers \Carbon\Carbonite\ReflectionCallable::getDocComment
  * @covers \Carbon\Carbonite\ReflectionCallable::getFileContent
  * @covers \Carbon\Carbonite\ReflectionCallable::getSource
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getUps
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAttributesAndAnnotations
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAttributes
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAnnotations
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAnnotationInstance
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getTypeFullQualifiedName
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::getImportFromGroups
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::parseGroupedImports
  */
 class BespinTest extends TestCase
 {
@@ -191,7 +196,10 @@ class BespinTest extends TestCase
                 return \Carbon\Carbon::now()->dayName;
             }
 
-            /** @Freeze('Tuesday') */
+            /**
+             * @Freeze('Tuesday')
+             * @Other('should not break')
+             */
             public function second(): string
             {
                 return \Carbon\Carbon::now()->dayName;
