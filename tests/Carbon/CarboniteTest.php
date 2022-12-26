@@ -246,15 +246,15 @@ class CarboniteTest extends TestCase
         Carbonite::speed(1);
         Carbonite::decelerate(50.0);
 
-        self::assertSame(1 / 50, Carbonite::speed());
+        self::assertEqualsWithDelta(1 / 50, Carbonite::speed(), 0.000000001);
 
         Carbonite::decelerate(0.1);
 
-        self::assertSame(1 / 5, Carbonite::speed());
+        self::assertEqualsWithDelta(1 / 5, Carbonite::speed(), 0.000000001);
 
         Carbonite::decelerate(2.0);
 
-        self::assertSame(1 / 10, Carbonite::speed());
+        self::assertEqualsWithDelta(1 / 10, Carbonite::speed(), 0.000000001);
     }
 
     /**
