@@ -7,11 +7,12 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Carbon\CarbonInterval;
 use Carbon\CarbonPeriod;
+use Carbon\FactoryImmutable;
 use Closure;
 use DateInterval;
 use DatePeriod;
 use DateTimeInterface;
-use Throwable;
+use Symfony\Component\Clock\Clock;
 
 class Tibanna
 {
@@ -257,8 +258,7 @@ class Tibanna
      */
     public function do($testNow, callable $action)
     {
-        $throwable = null;
-        $result = null;
+        $clock = class_exists(Clock::class) ? Clock::get() : null;
         $initialSpeed = $this->speed;
         $initialMutableTestNow = Carbon::getTestNow();
         $initialImmutableTestNow = CarbonImmutable::getTestNow();
@@ -268,23 +268,19 @@ class Tibanna
         $this->freeze($testNow, 0);
 
         try {
-            $result = $action();
-        } catch (Throwable $error) {
-            $throwable = $error;
+            return $action();
+        } finally {
+            $this->speed = $initialSpeed;
+            $this->testNow = $initialTestNow;
+            $this->moment = $initialMoment;
+            $this->lastFrozenAt = $initialFrozenAt;
+            Carbon::setTestNow($initialMutableTestNow);
+            CarbonImmutable::setTestNow($initialImmutableTestNow);
+
+            if (class_exists(Clock::class)) {
+                Clock::set($clock);
+            }
         }
-
-        $this->speed = $initialSpeed;
-        $this->testNow = $initialTestNow;
-        $this->moment = $initialMoment;
-        $this->lastFrozenAt = $initialFrozenAt;
-        Carbon::setTestNow($initialMutableTestNow);
-        CarbonImmutable::setTestNow($initialImmutableTestNow);
-
-        if ($throwable) {
-            throw $throwable;
-        }
-
-        return $result;
     }
 
     /**
@@ -308,6 +304,10 @@ class Tibanna
     {
         Carbon::setTestNow($testNow);
         CarbonImmutable::setTestNow($testNow);
+
+        if (class_exists(Clock::class)) {
+            Clock::set(new Clock(new FactoryImmutable()));
+        }
     }
 
     /**
