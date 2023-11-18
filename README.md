@@ -2,6 +2,8 @@
 
 Freeze, accelerate, slow down time and many more with [Carbon](https://carbon.nesbot.com/).
 
+You can use it with any PSR-compatible clock system and framework.
+
 [![Latest Stable Version](https://poser.pugx.org/kylekatarnls/carbonite/v/stable.png)](https://packagist.org/packages/kylekatarnls/carbonite)
 [![GitHub Actions](https://github.com/kylekatarnls/carbonite/workflows/Tests/badge.svg)](https://github.com/kylekatarnls/carbonite/actions)
 [![Code Climate](https://codeclimate.com/github/kylekatarnls/carbonite/badges/gpa.svg)](https://codeclimate.com/github/kylekatarnls/carbonite)
@@ -357,6 +359,43 @@ you chose.
 This is a very low-level feature used for the internal unit tests of **Carbonite** and you
 probably won't need this methods in your own code and tests, you more likely need the
 [`freeze()`](#freeze) or [`jumpTo()`](#jumpto) method.
+
+## Example with PSR-20 clock and frameworks such as Symfony
+
+Symfony 7 `DatePoint` or service using any framework having
+a clock system that can be mocked can be synchronized with
+`Carbon\FactoryImmutable` 
+
+```php
+use Carbon\Carbonite;
+use Carbon\FactoryImmutable;
+use Symfony\Component\Clock\Clock;
+use Symfony\Component\Clock\DatePoint;
+
+// In your test setup() method, synchronize Symfony clock
+Clock::set(new FactoryImmutable());
+
+Carbonite::freeze('2000-01-01');
+
+$date = new DatePoint();
+echo $date->format('Y-m-d'); // output: 2000-01-01
+
+// Having a service using PSR Clock, you can also test it
+// With any Carbonite method by passing FactoryImmutable
+class MyService
+{
+    public function __construct(private \Psr\Clock\ClockInterface $clock) {}
+    
+    public function getDate()
+    {
+        return $this->clock->now()->format('Y-m-d');
+    }
+}
+
+$service = new MyService(new FactoryImmutable());
+Carbonite::freeze('2025-12-20');
+echo $service->getDate(); // output: 2025-12-20
+```
 
 ## PHPUnit example
 

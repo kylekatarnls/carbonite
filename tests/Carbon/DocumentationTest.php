@@ -17,6 +17,7 @@ class DocumentationTest extends TestCase
 {
     /**
      * @dataProvider getReadmeExamples
+     *
      * @covers ::freeze
      */
     public function testReadmeExamples(string $example): void
@@ -134,6 +135,10 @@ class DocumentationTest extends TestCase
         );
 
         foreach ($matches[1] as $example) {
+            if (strpos($example, 'Symfony\\Component\\Clock\\Clock') !== false) {
+                continue;
+            }
+
             yield [trim(str_replace("\r", '', $example))];
         }
     }
