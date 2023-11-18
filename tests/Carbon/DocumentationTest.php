@@ -17,6 +17,7 @@ class DocumentationTest extends TestCase
 {
     /**
      * @dataProvider getReadmeExamples
+     *
      * @covers ::freeze
      */
     public function testReadmeExamples(string $example): void

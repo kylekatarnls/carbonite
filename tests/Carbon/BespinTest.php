@@ -69,7 +69,7 @@ class BespinTest extends TestCase
         self::assertSame(0.0, Carbonite::speed());
     }
 
-    #[Freeze("2020-12-05 12:00")]
+    #[Freeze('2020-12-05 12:00')]
     public function testAttribute(): void
     {
         if (version_compare(PHP_VERSION, '8.0.0-rc1', '<')) {
