@@ -6,8 +6,10 @@ use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use Carbon\Carbonite;
 use Carbon\CarbonPeriod;
+use Carbon\FactoryImmutable;
 use Generator;
 use PHPUnit\Framework\TestCase;
+use Psr\Clock\ClockInterface;
 use Throwable;
 
 /**
@@ -67,6 +69,12 @@ class DocumentationTest extends TestCase
             ]);
         }, $code);
 
+        $factory = new FactoryImmutable();
+
+        if (!($factory instanceof ClockInterface) && strpos($code, 'DatePoint') !== false) {
+            self::markTestSkipped('Requires Carbon 2.69.0');
+        }
+
         if ($needMock) {
             Carbonite::mock('2000-01-01');
 
@@ -78,6 +86,7 @@ class DocumentationTest extends TestCase
         $output = [];
 
         try {
+            $level = error_reporting(E_ALL & ~(E_USER_DEPRECATED | E_DEPRECATED));
             ob_start();
             eval($code);
             $output = array_filter(explode("\n", trim(ob_get_contents() ?: '')), function ($line) {
@@ -86,6 +95,8 @@ class DocumentationTest extends TestCase
             ob_end_clean();
         } catch (Throwable $exception) {
             self::fail($exception->getMessage()."\n\nin code:\n$code\n\nstack:\n".$exception->getTraceAsString());
+        } finally {
+            error_reporting($level);
         }
 
         preg_match_all('#//\s*outputs?:(.+)$#m', $example, $matches);
@@ -135,10 +146,6 @@ class DocumentationTest extends TestCase
         );
 
         foreach ($matches[1] as $example) {
-            if (strpos($example, 'Symfony\\Component\\Clock\\Clock') !== false) {
-                continue;
-            }
-
             yield [trim(str_replace("\r", '', $example))];
         }
     }

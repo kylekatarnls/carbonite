@@ -10,7 +10,7 @@ use Attribute;
 use Carbon\Carbonite;
 
 #[Attribute]
-class Release extends AttributeBase
+class Release implements UpInterface
 {
     public function up(): void
     {

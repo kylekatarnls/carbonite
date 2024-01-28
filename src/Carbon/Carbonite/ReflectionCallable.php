@@ -69,16 +69,17 @@ class ReflectionCallable
 
     public function getDocComment(): string
     {
-        return $this->getSource()->getDocComment() ?: '';
+        return (string) $this->getSource()->getDocComment();
     }
 
     public function getFileContent(): string
     {
-        $file = $this->getSource()->getFileName() ?: null;
-        $contents = $file ? @file_get_contents($file) : false;
+        $file = (string) $this->getSource()->getFileName();
+        $contents = $file !== '' ? ((string) @file_get_contents($file)) : '';
 
-        return $contents
-            ?: implode("\n", array_map(function (string $className): string {
+        return $contents !== ''
+            ? $contents
+            : implode("\n", array_map(function (string $className): string {
                 return "use $className;";
             }, [Freeze::class, Speed::class, JumpTo::class]));
     }

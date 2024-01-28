@@ -10,10 +10,18 @@ use Attribute;
 use Carbon\Carbonite;
 
 #[Attribute]
-class Speed extends AttributeBase
+class Speed implements UpInterface
 {
+    /** @var ?float */
+    private $speed;
+
+    public function __construct(?float $speed = null)
+    {
+        $this->speed = $speed;
+    }
+
     public function up(): void
     {
-        Carbonite::speed(...$this->getArguments());
+        Carbonite::speed($this->speed);
     }
 }

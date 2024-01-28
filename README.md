@@ -2,7 +2,8 @@
 
 Freeze, accelerate, slow down time and many more with [Carbon](https://carbon.nesbot.com/).
 
-You can use it with any PSR-compatible clock system and framework.
+You can use it with any PSR-compatible clock system and framework
+or with any time mocking system.
 
 [![Latest Stable Version](https://poser.pugx.org/kylekatarnls/carbonite/v/stable.png)](https://packagist.org/packages/kylekatarnls/carbonite)
 [![GitHub Actions](https://github.com/kylekatarnls/carbonite/workflows/Tests/badge.svg)](https://github.com/kylekatarnls/carbonite/actions)
@@ -346,12 +347,26 @@ echo Carbon::now()->format('Y-m-d'); // output: 2019-05-24
 echo Carbonite::speed(); // output: 1
 ```
 
+### addSynchronizer
+
+`addSynchronizer(callable $synchronizer): void`
+
+Register a callback that will be executed every time mock value is changed.
+
+The callback receives the default `\Carbon\FactoryImmutable` as parameter.
+
+### removeSynchronizer
+
+`removeSynchronizer(callable $synchronizer): void`
+
+Remove a callback that has been registered with `addSynchronizer()`.
+
 ### mock
 
 `mock($testNow): void`
 
 Set the "real" now moment, it's a mock inception. It means that when you call `release()`
-You will no longer go back to present but you will fallback to the mocked now. And the
+you will no longer go back to present but you will fallback to the mocked now. And the
 mocked now will also determine the base speed to consider. If this mocked instance is
 static, then "real" time will be frozen and so the fake timeline too no matter the speed
 you chose.
@@ -364,16 +379,16 @@ probably won't need this methods in your own code and tests, you more likely nee
 
 Symfony 7 `DatePoint` or service using any framework having
 a clock system that can be mocked can be synchronized with
-`Carbon\FactoryImmutable` 
+`Carbon\FactoryImmutable`. 
 
 ```php
 use Carbon\Carbonite;
 use Carbon\FactoryImmutable;
-use Symfony\Component\Clock\Clock;
+use Psr\Clock\ClockInterface;
 use Symfony\Component\Clock\DatePoint;
 
-// In your test setup() method, synchronize Symfony clock
-Clock::set(new FactoryImmutable());
+// \Symfony\Component\Clock\Clock is automatically synchronized
+// So DatePoint and services linked to it will be mocked
 
 Carbonite::freeze('2000-01-01');
 
@@ -381,10 +396,15 @@ $date = new DatePoint();
 echo $date->format('Y-m-d'); // output: 2000-01-01
 
 // Having a service using PSR Clock, you can also test it
-// With any Carbonite method by passing FactoryImmutable
+// With any Carbonite method by passing Carbonite::getClock()
 class MyService
 {
-    public function __construct(private \Psr\Clock\ClockInterface $clock) {}
+    private $clock;
+
+    public function __construct(ClockInterface $clock)
+    {
+        $this->clock = $clock;
+    }
     
     public function getDate()
     {
@@ -392,9 +412,24 @@ class MyService
     }
 }
 
-$service = new MyService(new FactoryImmutable());
+$service = new MyService(Carbonite::getClock());
 Carbonite::freeze('2025-12-20');
 echo $service->getDate(); // output: 2025-12-20
+```
+
+If you have any other time-mocking system, you can synchronize
+them with `freeze` and `jumpTo` attribute using
+`addSynchronizer` in the bootstrap file of you test,
+for instance if you use
+[Timecop-PHP](https://github.com/runkit7/Timecop-PHP):
+
+```php
+use Carbon\Carbonite;
+use Carbon\FactoryImmutable;
+
+Carbonite::addSynchronizer(function (FactoryImmutable $factory) {
+    Timecop::travel($factory->now()->timestamp);
+});
 ```
 
 ## PHPUnit example

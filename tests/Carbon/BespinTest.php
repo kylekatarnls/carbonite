@@ -23,8 +23,12 @@ use PHPUnit\Framework\TestCase;
  * @covers \Carbon\Bespin::up
  * @covers \Carbon\Bespin::down
  * @covers \Carbon\Bespin::test
- * @covers \Carbon\Carbonite\Attribute\AttributeBase::__construct
- * @covers \Carbon\Carbonite\Attribute\AttributeBase::getArguments
+ * @covers \Carbon\Carbonite\Attribute\Freeze::__construct
+ * @covers \Carbon\Carbonite\Attribute\Freeze::up
+ * @covers \Carbon\Carbonite\Attribute\JumpTo::__construct
+ * @covers \Carbon\Carbonite\Attribute\JumpTo::up
+ * @covers \Carbon\Carbonite\Attribute\Speed::__construct
+ * @covers \Carbon\Carbonite\Attribute\Speed::up
  * @covers \Carbon\Carbonite\ReflectionCallable::__construct
  * @covers \Carbon\Carbonite\ReflectionCallable::getAttributes
  * @covers \Carbon\Carbonite\ReflectionCallable::getDocComment
