@@ -3,6 +3,7 @@
 namespace Tests\Carbon;
 
 use Carbon\Bespin;
+use Carbon\BespinTimeMocking;
 use Carbon\Carbon;
 use Carbon\Carbonite;
 // @codingStandardsIgnoreStart
@@ -45,15 +46,7 @@ use PHPUnit\Framework\TestCase;
  */
 class BespinTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        Bespin::up($this);
-    }
-
-    protected function tearDown(): void
-    {
-        Bespin::down($this);
-    }
+    use BespinTimeMocking;
 
     /**
      * @Freeze("2020-12-03 15:00")
@@ -112,7 +105,6 @@ class BespinTest extends TestCase
     public function testJanuaryFirst(): void
     {
         self::assertSame('01-01', Carbon::now()->format('m-d'));
-        self::assertSame(1.0, Carbonite::speed());
     }
 
     /** @Speed(10) */

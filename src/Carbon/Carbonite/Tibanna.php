@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Carbon\Carbonite;
 
 use Carbon\Carbon;
@@ -11,7 +13,6 @@ use Carbon\FactoryImmutable;
 use Closure;
 use DateInterval;
 use DatePeriod;
-use DateTimeImmutable;
 use DateTimeInterface;
 use Psr\Clock\ClockInterface;
 use Symfony\Component\Clock\Clock;

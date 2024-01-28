@@ -435,23 +435,16 @@ Carbonite::addSynchronizer(function (FactoryImmutable $factory) {
 ## PHPUnit example
 
 ```php
+use Carbon\BespinTimeMocking;
 use Carbon\Carbonite;
 use Carbon\CarbonPeriod;
 use PHPUnit\Framework\TestCase;
 
 class MyProjectTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        // Working with frozen time in unit tests is highly recommended.
-        Carbonite::freeze();
-    }
-
-    protected function tearDown(): void
-    {
-        // Release after each test to isolate the timeline of each one.
-        Carbonite::release();
-    }
+    // Will handle attributes on each method before running it
+    // and release the time after each test
+    use BespinTimeMocking;
 
     public function testHolidays()
     {
@@ -480,11 +473,12 @@ class MyProjectTest extends TestCase
 ```
 
 PHP 8 attributes (or PHPDoc annotations for PHP 7) can also be used for
-convenience. Enable it using `Bespin::up()` on a given test suite:
+convenience. Enable it using `BespinTimeMocking` trait or `Bespin::up()`
+on a given test suite:
 
 ### PHP 8
 ```php
-use Carbon\Bespin;
+use Carbon\BespinTimeMocking;
 use Carbon\Carbon;
 use Carbon\Carbonite;
 use Carbon\Carbonite\Attribute\Freeze;
@@ -494,17 +488,9 @@ use PHPUnit\Framework\TestCase;
 
 class PHP8Test extends TestCase
 {
-    protected function setUp(): void
-    {
-        // Will handle attributes on each method before running it
-        Bespin::up($this);
-    }
-
-    protected function tearDown(): void
-    {
-        // Release the time after each test
-        Bespin::down();
-    }
+    // Will handle attributes on each method before running it
+    // and release the time after each test
+    use BespinTimeMocking;
 
     #[Freeze("2019-12-25")]
     public function testChristmas()
@@ -530,12 +516,12 @@ class PHP8Test extends TestCase
         self::assertSame(10.0, Carbonite::speed());
     }
 
-    #[Release()]
+    #[Release]
     public function testRelease()
     {
         // If no attributes have been used, Bespin::up() will use:
         // Carbonite::freeze('now')
-        // But you can still use @Release() to get a test with
+        // But you can still use #[Release] to get a test with
         // real time
     }
 }
@@ -543,7 +529,7 @@ class PHP8Test extends TestCase
 
 ### PHP 7
 ```php
-use Carbon\Bespin;
+use Carbon\BespinTimeMocking;
 use Carbon\Carbon;
 use Carbon\Carbonite;
 use Carbon\Carbonite\Attribute\Freeze;
@@ -553,17 +539,9 @@ use PHPUnit\Framework\TestCase;
 
 class PHP7Test extends TestCase
 {
-    protected function setUp(): void
-    {
-        // Will handle annotations on each method before running it
-        Bespin::up($this);
-    }
-
-    protected function tearDown(): void
-    {
-        // Release the time after each test
-        Bespin::down();
-    }
+    // Will handle attributes on each method before running it
+    // and release the time after each test
+    use BespinTimeMocking;
 
     /** @Freeze("2019-12-25") */
     public function testChristmas()
@@ -608,6 +586,7 @@ have in the same test a `@group`, `@dataProvider` or whatever.
 If you're familiar with `fakeAsync()` and `tick()` of Angular testing tools, then you can get the same syntax in
 your PHP tests using:
 
+<i code-id="fake-async"></i>
 ```php
 use Carbon\Carbonite;
 
@@ -623,6 +602,7 @@ function tick(int $milliseconds): void {
 ```
 
 And use it as below:
+<i depends-on="fake-async"></i>
 ```php
 use Carbon\Carbon;
 

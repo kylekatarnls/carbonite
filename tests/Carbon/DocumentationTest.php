@@ -8,8 +8,12 @@ use Carbon\Carbonite;
 use Carbon\CarbonPeriod;
 use Carbon\FactoryImmutable;
 use Generator;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Psr\Clock\ClockInterface;
+use ReflectionMethod;
+use SimpleXMLElement;
+use Symfony\Component\Clock\DatePoint;
 use Throwable;
 
 /**
@@ -71,8 +75,14 @@ class DocumentationTest extends TestCase
 
         $factory = new FactoryImmutable();
 
-        if (!($factory instanceof ClockInterface) && strpos($code, 'DatePoint') !== false) {
-            self::markTestSkipped('Requires Carbon 2.69.0');
+        if (strpos($code, 'DatePoint') !== false) {
+            if (!class_exists(DatePoint::class)) {
+                self::markTestSkipped('Requires Symfony >= 7');
+            }
+
+            if (!($factory instanceof ClockInterface)) {
+                self::markTestSkipped('Requires Carbon >= 2.69.0');
+            }
         }
 
         if ($needMock) {
@@ -128,9 +138,21 @@ class DocumentationTest extends TestCase
 
                 if (preg_match('/^test[A-Z]/', $method)) {
                     $testCase->methodName = $method;
-                    $testCase->setUp();
-                    $testCase->$method();
-                    $testCase->tearDown();
+                    $steps = [
+                        'setUp',
+                        'mockTimeWithBespin',
+                        $method,
+                        'releaseBespinTimeMocking',
+                        'tearDown',
+                    ];
+
+                    foreach ($steps as $step) {
+                        if (method_exists($testCase, $step)) {
+                            $methodReflection = new ReflectionMethod($testCase, $step);
+                            $methodReflection->setAccessible(true);
+                            $methodReflection->invoke($testCase);
+                        }
+                    }
                 }
             }
         }
@@ -138,15 +160,47 @@ class DocumentationTest extends TestCase
 
     public function getReadmeExamples(): Generator
     {
+        $readme = (string) file_get_contents(__DIR__.'/../../README.md');
+        $codes = [];
+
         preg_match_all(
             '/```php([\s\S]+)```/U',
-            file_get_contents(__DIR__.'/../../README.md') ?: '',
+            $readme,
             $matches,
-            PREG_PATTERN_ORDER
+            PREG_PATTERN_ORDER | PREG_OFFSET_CAPTURE
         );
 
-        foreach ($matches[1] as $example) {
-            yield [trim(str_replace("\r", '', $example))];
+        foreach ($matches[1] as [$example, $offset]) {
+            $previousLines = explode(
+                "\n",
+                str_replace("\r", '', substr($readme, 0, $offset))
+            );
+
+            $previousLine = trim(array_slice($previousLines, -2)[0] ?? '');
+            $code = trim(str_replace("\r", '', $example));
+
+            if (preg_match('/^<i.+><\/i>$/', $previousLine)) {
+                $infoTag = new SimpleXMLElement($previousLine);
+                $codeId = (string) ($infoTag['code-id'] ?? '');
+
+                if ($codeId !== '') {
+                    $codes[$codeId] = $code;
+
+                    continue;
+                }
+
+                $dependsOn = (string) ($infoTag['depends-on'] ?? '');
+
+                if ($dependsOn !== '') {
+                    if (!isset($codes[$dependsOn])) {
+                        throw new InvalidArgumentException("Code '$dependsOn' not found");
+                    }
+
+                    $code = $codes[$dependsOn]."\n$code";
+                }
+            }
+
+            yield [$code];
         }
     }
 }

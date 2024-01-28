@@ -20,7 +20,7 @@ class Freeze implements UpInterface
 {
     /** @var string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval */
     private $toMoment;
-    /** @var ?float */
+    /** @var float */
     private $speed;
 
     public function __construct($toMoment = 'now', float $speed = 0.0)

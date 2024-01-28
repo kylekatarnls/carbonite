@@ -63,7 +63,7 @@ jobs:
         run: |
           composer remove --no-update friendsofphp/php-cs-fixer phpstan/phpstan phan/phan vimeo/psalm phpmd/phpmd --dev --no-interaction;
           composer require --no-update psr/clock:^1.0 --no-interaction;
-          composer update --prefer-dist --no-progress --no-suggest ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }} ${{ matrix.php >= 8 && '--ignore-platform-req=php' || '' }};
+          composer update --prefer-dist --no-progress --no-suggest ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }};
 
       - name: Fix compatibility
         run: php tests/fix-compatibility.php
@@ -106,7 +106,7 @@ jobs:
       if: steps.composer-cache.outputs.cache-hit != 'true'
       run: |
         composer remove --no-update phpstan/phpstan phan/phan vimeo/psalm phpmd/phpmd --no-interaction;
-        composer update --prefer-dist --no-progress --no-suggest ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }} ${{ matrix.php >= 8 && '--ignore-platform-req=php' || '' }};
+        composer update --prefer-dist --no-progress --no-suggest ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }};
 
     - name: Coverage
       run: php -d memory_limit=-1 -d zend.enable_gc=0 vendor/phpunit/phpunit/phpunit --coverage-clover=clover.xml --coverage-text
@@ -153,9 +153,8 @@ jobs:
       - name: Install dependencies
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: |
-          composer remove --no-update kylekatarnls/multi-tester phpunit/phpunit --no-interaction;
           composer require --no-update symfony/clock:^7 friendsofphp/php-cs-fixer:^2.16 --no-interaction;
-          composer update --prefer-dist --no-progress --no-suggest ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }} ${{ matrix.php >= 8 && '--ignore-platform-req=php' || '' }};
+          composer update --prefer-dist --no-progress --no-suggest ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }};
 
       - name: Check style
         run: composer style-check

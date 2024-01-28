@@ -38,6 +38,10 @@ class TibannaTest extends TestCase
      */
     public function testDatePoint(): void
     {
+        if (!class_exists(DatePoint::class)) {
+            self::markTestSkipped('Requires Symfony >= 7');
+        }
+
         $factory = new FactoryImmutable();
 
         if (!($factory instanceof ClockInterface)) {
