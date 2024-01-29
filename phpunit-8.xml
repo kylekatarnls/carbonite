@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+  xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/8.5/phpunit.xsd"
   bootstrap="tests/bootstrap.php"
   colors="true"
-  cacheDirectory=".phpunit.cache"
-  requireCoverageMetadata="true"
+  forceCoversAnnotation="true"
 >
+  <filter>
+    <whitelist>
+      <directory>src/Carbon</directory>
+    </whitelist>
+  </filter>
+
   <testsuites>
     <testsuite name="Feature">
       <directory>tests/Carbon</directory>
     </testsuite>
   </testsuites>
-  <source>
-    <include>
-      <directory>src/Carbon</directory>
-    </include>
-  </source>
 </phpunit>

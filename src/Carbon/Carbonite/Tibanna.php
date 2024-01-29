@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Carbon\Carbonite;
 
 use Carbon\Carbon;
@@ -7,11 +9,13 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Carbon\CarbonInterval;
 use Carbon\CarbonPeriod;
+use Carbon\FactoryImmutable;
 use Closure;
 use DateInterval;
 use DatePeriod;
 use DateTimeInterface;
-use Throwable;
+use Psr\Clock\ClockInterface;
+use Symfony\Component\Clock\Clock;
 
 class Tibanna
 {
@@ -45,13 +49,16 @@ class Tibanna
     private $testNow = null;
 
     /**
-     * Get fake now instance from real now instance.
+     * List of callbacks to execute when changing mocked date.
      *
-     * @param CarbonInterface $realNow
-     *
-     * @return CarbonInterface
+     * @var callable[]
      */
-    public function fake(CarbonInterface $realNow): CarbonInterface
+    private $synchronizers = [];
+
+    /**
+     * Get fake now instance from real now instance.
+     */
+    public function fake(DateTimeInterface $realNow): CarbonInterface
     {
         if (!$this->moment) {
             $this->speed(1.0);
@@ -69,7 +76,7 @@ class Tibanna
             return $fakeNow;
         }
 
-        $microseconds = $lastFrozenAt->diffInMicroseconds($realNow, true);
+        $microseconds = $lastFrozenAt->diffInMicroseconds($realNow, false);
 
         return $fakeNow->addMicroseconds((int) round($microseconds * $this->speed));
     }
@@ -117,10 +124,10 @@ class Tibanna
      *
      * @return float
      */
-    public function speed(float $speed = null): float
+    public function speed(?float $speed = null): float
     {
         if ($speed !== null) {
-            $this->freeze(Carbon::now(), $speed);
+            $this->freeze('now', $speed);
         }
 
         return $this->speed;
@@ -173,7 +180,7 @@ class Tibanna
      * @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $moment
      * @param float|null                                                                                   $speed
      */
-    public function jumpTo($moment, float $speed = null): void
+    public function jumpTo($moment, ?float $speed = null): void
     {
         $this->freeze($moment, $speed === null ? $this->speed : $speed);
     }
@@ -182,12 +189,12 @@ class Tibanna
      * Add the given duration to the fake timeline keeping the current speed.
      * A second parameter can be passed to change the speed after the jump.
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
-     * or a interval (DateInterval/CarbonInterval).
+     * or an interval (DateInterval/CarbonInterval).
      *
      * @param string|float|CarbonInterval|DateInterval $duration
      * @param float|null                               $speed
      */
-    public function elapse($duration, float $speed = null): void
+    public function elapse($duration, ?float $speed = null): void
     {
         $this->callDurationMethodAndJump('add', $duration, $speed);
     }
@@ -196,12 +203,12 @@ class Tibanna
      * Subtract the given duration to the fake timeline keeping the current speed.
      * A second parameter can be passed to change the speed after the jump.
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
-     * or a interval (DateInterval/CarbonInterval).
+     * or an interval (DateInterval/CarbonInterval).
      *
      * @param string|int|float|CarbonInterval|DateInterval $duration
      * @param float|null                                   $speed
      */
-    public function rewind($duration, float $speed = null): void
+    public function rewind($duration, ?float $speed = null): void
     {
         $this->callDurationMethodAndJump('sub', $duration, $speed);
     }
@@ -218,13 +225,13 @@ class Tibanna
 
     /**
      * Set the "real" now moment, it's a mock inception. It means that when you call release()
-     * You will no longer go back to present but you will fallback to the mocked now. And the
+     * You will no longer go back to present, but you will fall back to the mocked now. And the
      * mocked now will also determine the base speed to consider. If this mocked instance is
-     * static, then "real" time will be frozen and so the fake timeline too no matter the speed
+     * static, then "real" time will be frozen and so the fake timeline too, no matter the speed
      * you chose.
      *
      * This is a very low-level feature used for the internal unit tests of Carbonite and you
-     * probably won't need this methods in your own code and tests, you more likely need the
+     * probably won't need this method in your own code and tests, you more likely need the
      * freeze() or jumpTo() method.
      *
      * @param string|CarbonInterface|Closure|null $testNow
@@ -257,8 +264,7 @@ class Tibanna
      */
     public function do($testNow, callable $action)
     {
-        $throwable = null;
-        $result = null;
+        $clock = self::callStaticMethodIfAvailable(Clock::class, 'get');
         $initialSpeed = $this->speed;
         $initialMutableTestNow = Carbon::getTestNow();
         $initialImmutableTestNow = CarbonImmutable::getTestNow();
@@ -268,23 +274,47 @@ class Tibanna
         $this->freeze($testNow, 0);
 
         try {
-            $result = $action();
-        } catch (Throwable $error) {
-            $throwable = $error;
+            return $action();
+        } finally {
+            $this->speed = $initialSpeed;
+            $this->testNow = $initialTestNow;
+            $this->moment = $initialMoment;
+            $this->lastFrozenAt = $initialFrozenAt;
+            Carbon::setTestNow($initialMutableTestNow);
+            CarbonImmutable::setTestNow($initialImmutableTestNow);
+            self::callStaticMethodIfAvailable(Clock::class, 'set', [$clock]);
         }
+    }
 
-        $this->speed = $initialSpeed;
-        $this->testNow = $initialTestNow;
-        $this->moment = $initialMoment;
-        $this->lastFrozenAt = $initialFrozenAt;
-        Carbon::setTestNow($initialMutableTestNow);
-        CarbonImmutable::setTestNow($initialImmutableTestNow);
+    /**
+     * Register a callback that will be executed every time mock value is changed.
+     *
+     * The callback receives the default \Carbon\FactoryImmutable as parameter.
+     */
+    public function addSynchronizer(callable $synchronizer): void
+    {
+        $this->synchronizers[] = $synchronizer;
+    }
 
-        if ($throwable) {
-            throw $throwable;
-        }
+    /**
+     * Remove a callback that has been registered with addSynchronizer().
+     */
+    public function removeSynchronizer(callable $synchronizer): void
+    {
+        $this->synchronizers = array_filter(
+            $this->synchronizers,
+            static function (callable $value) use ($synchronizer): bool {
+                return $value !== $synchronizer;
+            }
+        );
+    }
 
-        return $result;
+    /**
+     * Return the default \Carbon\FactoryImmutable instance.
+     */
+    public function getClock(): FactoryImmutable
+    {
+        return $this->getDefaultClock() ?? new FactoryImmutable();
     }
 
     /**
@@ -306,8 +336,32 @@ class Tibanna
      */
     protected function setTestNow($testNow = null): void
     {
+        $factory = $this->getDefaultClock();
+
         Carbon::setTestNow($testNow);
-        CarbonImmutable::setTestNow($testNow);
+
+        if (!$factory) {
+            CarbonImmutable::setTestNow($testNow); // @codeCoverageIgnore
+        }
+
+        $factory = $factory ?? new FactoryImmutable();
+
+        if ($factory instanceof ClockInterface) {
+            self::callStaticMethodIfAvailable(
+                Clock::class,
+                'set',
+                /**
+                 * @psalm-suppress TooManyArguments
+                 */
+                static function () use ($factory): array {
+                    return [new Clock($factory)];
+                }
+            );
+        }
+
+        foreach ($this->synchronizers as $synchronizer) {
+            $synchronizer($factory);
+        }
     }
 
     /**
@@ -324,5 +378,25 @@ class Tibanna
         }
 
         $this->jumpTo(Carbon::now()->$method($duration), $speed);
+    }
+
+    /**
+     * @param class-string  $class
+     * @param Closure|array $parameters
+     *
+     * @return mixed
+     */
+    private function callStaticMethodIfAvailable(string $class, string $method, $parameters = [])
+    {
+        if (class_exists($class) && method_exists($class, $method)) {
+            return $class::$method(...(is_array($parameters) ? $parameters : $parameters()));
+        }
+
+        return null;
+    }
+
+    private function getDefaultClock(): ?FactoryImmutable
+    {
+        return self::callStaticMethodIfAvailable(FactoryImmutable::class, 'getDefaultInstance');
     }
 }

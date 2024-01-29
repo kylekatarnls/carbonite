@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Carbon;
 
 use Carbon\Carbonite\ReflectionTestCallable;
@@ -11,7 +13,7 @@ class Bespin
      */
     public static function up($test): void
     {
-        $method = new ReflectionTestCallable($test);
+        $method = ReflectionTestCallable::fromTestCase($test);
         $count = 0;
 
         foreach ($method->getUps() as $instance) {

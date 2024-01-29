@@ -2,7 +2,8 @@
 
 Freeze, accelerate, slow down time and many more with [Carbon](https://carbon.nesbot.com/).
 
-You can use it with any PSR-compatible clock system and framework.
+You can use it with any PSR-compatible clock system and framework
+or with any time mocking system.
 
 [![Latest Stable Version](https://poser.pugx.org/kylekatarnls/carbonite/v/stable.png)](https://packagist.org/packages/kylekatarnls/carbonite)
 [![GitHub Actions](https://github.com/kylekatarnls/carbonite/workflows/Tests/badge.svg)](https://github.com/kylekatarnls/carbonite/actions)
@@ -346,12 +347,26 @@ echo Carbon::now()->format('Y-m-d'); // output: 2019-05-24
 echo Carbonite::speed(); // output: 1
 ```
 
+### addSynchronizer
+
+`addSynchronizer(callable $synchronizer): void`
+
+Register a callback that will be executed every time mock value is changed.
+
+The callback receives the default `\Carbon\FactoryImmutable` as parameter.
+
+### removeSynchronizer
+
+`removeSynchronizer(callable $synchronizer): void`
+
+Remove a callback that has been registered with `addSynchronizer()`.
+
 ### mock
 
 `mock($testNow): void`
 
 Set the "real" now moment, it's a mock inception. It means that when you call `release()`
-You will no longer go back to present but you will fallback to the mocked now. And the
+you will no longer go back to present but you will fallback to the mocked now. And the
 mocked now will also determine the base speed to consider. If this mocked instance is
 static, then "real" time will be frozen and so the fake timeline too no matter the speed
 you chose.
@@ -364,16 +379,16 @@ probably won't need this methods in your own code and tests, you more likely nee
 
 Symfony 7 `DatePoint` or service using any framework having
 a clock system that can be mocked can be synchronized with
-`Carbon\FactoryImmutable` 
+`Carbon\FactoryImmutable`. 
 
 ```php
 use Carbon\Carbonite;
 use Carbon\FactoryImmutable;
-use Symfony\Component\Clock\Clock;
+use Psr\Clock\ClockInterface;
 use Symfony\Component\Clock\DatePoint;
 
-// In your test setup() method, synchronize Symfony clock
-Clock::set(new FactoryImmutable());
+// \Symfony\Component\Clock\Clock is automatically synchronized
+// So DatePoint and services linked to it will be mocked
 
 Carbonite::freeze('2000-01-01');
 
@@ -381,10 +396,15 @@ $date = new DatePoint();
 echo $date->format('Y-m-d'); // output: 2000-01-01
 
 // Having a service using PSR Clock, you can also test it
-// With any Carbonite method by passing FactoryImmutable
+// With any Carbonite method by passing Carbonite::getClock()
 class MyService
 {
-    public function __construct(private \Psr\Clock\ClockInterface $clock) {}
+    private $clock;
+
+    public function __construct(ClockInterface $clock)
+    {
+        $this->clock = $clock;
+    }
     
     public function getDate()
     {
@@ -392,31 +412,39 @@ class MyService
     }
 }
 
-$service = new MyService(new FactoryImmutable());
+$service = new MyService(Carbonite::getClock());
 Carbonite::freeze('2025-12-20');
 echo $service->getDate(); // output: 2025-12-20
+```
+
+If you have any other time-mocking system, you can synchronize
+them with `freeze` and `jumpTo` attribute using
+`addSynchronizer` in the bootstrap file of you test,
+for instance if you use
+[Timecop-PHP](https://github.com/runkit7/Timecop-PHP):
+
+```php
+use Carbon\Carbonite;
+use Carbon\FactoryImmutable;
+
+Carbonite::addSynchronizer(function (FactoryImmutable $factory) {
+    Timecop::travel($factory->now()->timestamp);
+});
 ```
 
 ## PHPUnit example
 
 ```php
+use Carbon\BespinTimeMocking;
 use Carbon\Carbonite;
 use Carbon\CarbonPeriod;
 use PHPUnit\Framework\TestCase;
 
 class MyProjectTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        // Working with frozen time in unit tests is highly recommended.
-        Carbonite::freeze();
-    }
-
-    protected function tearDown(): void
-    {
-        // Release after each test to isolate the timeline of each one.
-        Carbonite::release();
-    }
+    // Will handle attributes on each method before running it
+    // and release the time after each test
+    use BespinTimeMocking;
 
     public function testHolidays()
     {
@@ -445,11 +473,12 @@ class MyProjectTest extends TestCase
 ```
 
 PHP 8 attributes (or PHPDoc annotations for PHP 7) can also be used for
-convenience. Enable it using `Bespin::up()` on a given test suite:
+convenience. Enable it using `BespinTimeMocking` trait or `Bespin::up()`
+on a given test suite:
 
 ### PHP 8
 ```php
-use Carbon\Bespin;
+use Carbon\BespinTimeMocking;
 use Carbon\Carbon;
 use Carbon\Carbonite;
 use Carbon\Carbonite\Attribute\Freeze;
@@ -459,17 +488,9 @@ use PHPUnit\Framework\TestCase;
 
 class PHP8Test extends TestCase
 {
-    protected function setUp(): void
-    {
-        // Will handle attributes on each method before running it
-        Bespin::up($this);
-    }
-
-    protected function tearDown(): void
-    {
-        // Release the time after each test
-        Bespin::down();
-    }
+    // Will handle attributes on each method before running it
+    // and release the time after each test
+    use BespinTimeMocking;
 
     #[Freeze("2019-12-25")]
     public function testChristmas()
@@ -495,12 +516,12 @@ class PHP8Test extends TestCase
         self::assertSame(10.0, Carbonite::speed());
     }
 
-    #[Release()]
+    #[Release]
     public function testRelease()
     {
         // If no attributes have been used, Bespin::up() will use:
         // Carbonite::freeze('now')
-        // But you can still use @Release() to get a test with
+        // But you can still use #[Release] to get a test with
         // real time
     }
 }
@@ -508,7 +529,7 @@ class PHP8Test extends TestCase
 
 ### PHP 7
 ```php
-use Carbon\Bespin;
+use Carbon\BespinTimeMocking;
 use Carbon\Carbon;
 use Carbon\Carbonite;
 use Carbon\Carbonite\Attribute\Freeze;
@@ -518,17 +539,9 @@ use PHPUnit\Framework\TestCase;
 
 class PHP7Test extends TestCase
 {
-    protected function setUp(): void
-    {
-        // Will handle annotations on each method before running it
-        Bespin::up($this);
-    }
-
-    protected function tearDown(): void
-    {
-        // Release the time after each test
-        Bespin::down();
-    }
+    // Will handle attributes on each method before running it
+    // and release the time after each test
+    use BespinTimeMocking;
 
     /** @Freeze("2019-12-25") */
     public function testChristmas()
@@ -573,6 +586,7 @@ have in the same test a `@group`, `@dataProvider` or whatever.
 If you're familiar with `fakeAsync()` and `tick()` of Angular testing tools, then you can get the same syntax in
 your PHP tests using:
 
+<i code-id="fake-async"></i>
 ```php
 use Carbon\Carbonite;
 
@@ -588,6 +602,7 @@ function tick(int $milliseconds): void {
 ```
 
 And use it as below:
+<i depends-on="fake-async"></i>
 ```php
 use Carbon\Carbon;
 

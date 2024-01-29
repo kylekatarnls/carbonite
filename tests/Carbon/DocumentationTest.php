@@ -6,8 +6,14 @@ use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use Carbon\Carbonite;
 use Carbon\CarbonPeriod;
+use Carbon\FactoryImmutable;
 use Generator;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use Psr\Clock\ClockInterface;
+use ReflectionMethod;
+use SimpleXMLElement;
+use Symfony\Component\Clock\DatePoint;
 use Throwable;
 
 /**
@@ -67,6 +73,18 @@ class DocumentationTest extends TestCase
             ]);
         }, $code);
 
+        $factory = new FactoryImmutable();
+
+        if (strpos($code, 'DatePoint') !== false) {
+            if (!class_exists(DatePoint::class)) {
+                self::markTestSkipped('Requires Symfony >= 7');
+            }
+
+            if (!($factory instanceof ClockInterface)) {
+                self::markTestSkipped('Requires Carbon >= 2.69.0');
+            }
+        }
+
         if ($needMock) {
             Carbonite::mock('2000-01-01');
 
@@ -78,6 +96,7 @@ class DocumentationTest extends TestCase
         $output = [];
 
         try {
+            $level = error_reporting(E_ALL & ~(E_USER_DEPRECATED | E_DEPRECATED));
             ob_start();
             eval($code);
             $output = array_filter(explode("\n", trim(ob_get_contents() ?: '')), function ($line) {
@@ -86,6 +105,8 @@ class DocumentationTest extends TestCase
             ob_end_clean();
         } catch (Throwable $exception) {
             self::fail($exception->getMessage()."\n\nin code:\n$code\n\nstack:\n".$exception->getTraceAsString());
+        } finally {
+            error_reporting($level);
         }
 
         preg_match_all('#//\s*outputs?:(.+)$#m', $example, $matches);
@@ -102,7 +123,20 @@ class DocumentationTest extends TestCase
 
             /** @var TestCase $testCase */
             $testCase = @eval('return new class() extends '.$className.' {
-                public $methodName = "";
+                private $methodName = "";
+
+                public function __construct(?string $name = null)
+                {
+                    parent::__construct($name ?? get_class_methods(self::class)[0]);
+                }
+
+                public function forTest(string $name): self
+                {
+                    $test = new self($name);
+                    $test->methodName = $name;
+
+                    return $test;
+                }
 
                 public function getName(bool $withDataSet = true): string
                 {
@@ -116,30 +150,70 @@ class DocumentationTest extends TestCase
                 }
 
                 if (preg_match('/^test[A-Z]/', $method)) {
-                    $testCase->methodName = $method;
-                    $testCase->setUp();
-                    $testCase->$method();
-                    $testCase->tearDown();
+                    $methodTester = $testCase->forTest($method);
+                    $steps = [
+                        'setUp',
+                        'mockTimeWithBespin',
+                        $method,
+                        'releaseBespinTimeMocking',
+                        'tearDown',
+                    ];
+
+                    foreach ($steps as $step) {
+                        if (method_exists($testCase, $step)) {
+                            $methodReflection = new ReflectionMethod($testCase, $step);
+                            $methodReflection->setAccessible(true);
+                            $methodReflection->invoke($methodTester);
+                        }
+                    }
                 }
             }
         }
     }
 
-    public function getReadmeExamples(): Generator
+    public static function getReadmeExamples(): Generator
     {
+        $readme = (string) file_get_contents(__DIR__.'/../../README.md');
+        $codes = [];
+
         preg_match_all(
             '/```php([\s\S]+)```/U',
-            file_get_contents(__DIR__.'/../../README.md') ?: '',
+            $readme,
             $matches,
-            PREG_PATTERN_ORDER
+            PREG_PATTERN_ORDER | PREG_OFFSET_CAPTURE
         );
 
-        foreach ($matches[1] as $example) {
-            if (strpos($example, 'Symfony\\Component\\Clock\\Clock') !== false) {
-                continue;
+        foreach ($matches[1] as [$example, $offset]) {
+            $previousLines = explode(
+                "\n",
+                str_replace("\r", '', substr($readme, 0, $offset))
+            );
+
+            $previousLine = trim(array_slice($previousLines, -2)[0] ?? '');
+            $code = trim(str_replace("\r", '', $example));
+
+            if (preg_match('/^<i.+><\/i>$/', $previousLine)) {
+                $infoTag = new SimpleXMLElement($previousLine);
+                $codeId = (string) ($infoTag['code-id'] ?? '');
+
+                if ($codeId !== '') {
+                    $codes[$codeId] = $code;
+
+                    continue;
+                }
+
+                $dependsOn = (string) ($infoTag['depends-on'] ?? '');
+
+                if ($dependsOn !== '') {
+                    if (!isset($codes[$dependsOn])) {
+                        throw new InvalidArgumentException("Code '$dependsOn' not found");
+                    }
+
+                    $code = $codes[$dependsOn]."\n$code";
+                }
             }
 
-            yield [trim(str_replace("\r", '', $example))];
+            yield [$code];
         }
     }
 }

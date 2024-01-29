@@ -5,6 +5,7 @@ namespace Tests\Carbon;
 use Carbon\Carbon;
 use Carbon\Carbonite;
 use Carbon\Carbonite\UnfrozenTimeException;
+use Carbon\FactoryImmutable;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
@@ -65,14 +66,26 @@ class CarboniteTest extends TestCase
      */
     public function testFake(): void
     {
-        $realNow = Carbon::instance(new DateTimeImmutable('now'));
+        $before = new DateTimeImmutable('now');
+        $realNow = new DateTimeImmutable('now');
+        $fakeBefore = Carbonite::fake($realNow);
+        $after = new DateTimeImmutable('now');
+
+        $totalTime = ((float) $after->format('U.u')) - ((float) $before->format('U.u'));
+        $diff = ((float) $fakeBefore->format('U.u')) - ((float) $realNow->format('U.u'));
+
+        self::assertLessThan($totalTime, abs($diff));
+
+        $realNow = new DateTimeImmutable('now');
         $fakeNow = Carbonite::fake($realNow);
+        $afterFake = new DateTimeImmutable('now');
 
-        $mock = (float) $fakeNow->format('U.u');
-        $real = (float) $realNow->format('U.u');
+        $totalTime = ((float) $afterFake->format('U.u')) - ((float) $before->format('U.u'));
+        $betweenTime = ((float) $realNow->format('U.u')) - ((float) $after->format('U.u'));
+        $diff = ((float) $fakeNow->format('U.u')) - ((float) $before->format('U.u'));
 
-        self::assertGreaterThan($realNow->format('Y-m-d H:i:s.u'), $fakeNow->format('Y-m-d H:i:s.u'));
-        self::assertLessThan(1, abs($mock - $real));
+        self::assertLessThan($totalTime, $diff);
+        self::assertGreaterThan($betweenTime, $diff);
 
         Carbonite::mock($realNow);
         Carbonite::freeze($realNow);
@@ -273,9 +286,9 @@ class CarboniteTest extends TestCase
     }
 
     /**
+     * @covers \Carbon\Carbonite\UnfrozenTimeException::__construct
      * @covers ::unfreeze
      * @covers \Carbon\Carbonite\Tibanna::unfreeze
-     * @covers \Carbon\Carbonite\UnfrozenTimeException::<public>
      */
     public function testUnfreezeException(): void
     {
@@ -507,9 +520,40 @@ class CarboniteTest extends TestCase
     {
         $property = new ReflectionProperty(Carbonite::class, 'tibanna');
         $property->setAccessible(true);
-        $property->setValue(Carbonite::class, null);
+        @$property->setValue(Carbonite::class, null);
 
         Carbonite::freeze('2022-03-15');
         self::assertSame('2022-03-15', Carbon::now()->format('Y-m-d'));
+    }
+
+    /**
+     * @covers ::addSynchronizer
+     * @covers ::removeSynchronizer
+     */
+    public function testSynchronizer(): void
+    {
+        $calls = 0;
+        $callback = static function () use (&$calls) {
+            $calls++;
+        };
+
+        Carbonite::freeze('2024-01-26 12:00');
+        self::assertSame(0, $calls);
+        Carbonite::addSynchronizer($callback);
+        Carbonite::freeze('2024-01-26 12:00');
+        self::assertSame(1, $calls);
+        Carbonite::jumpTo('2024-01-26 12:00');
+        self::assertSame(2, $calls);
+        Carbonite::removeSynchronizer($callback);
+        Carbonite::freeze('2024-01-26 12:00');
+        self::assertSame(2, $calls);
+    }
+
+    /**
+     * @covers ::getClock
+     */
+    public function testGetClock(): void
+    {
+        self::assertInstanceOf(FactoryImmutable::class, Carbonite::getClock());
     }
 }

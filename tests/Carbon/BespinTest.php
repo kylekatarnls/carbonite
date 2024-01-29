@@ -3,6 +3,7 @@
 namespace Tests\Carbon;
 
 use Carbon\Bespin;
+use Carbon\BespinTimeMocking;
 use Carbon\Carbon;
 use Carbon\Carbonite;
 // @codingStandardsIgnoreStart
@@ -23,13 +24,18 @@ use PHPUnit\Framework\TestCase;
  * @covers \Carbon\Bespin::up
  * @covers \Carbon\Bespin::down
  * @covers \Carbon\Bespin::test
- * @covers \Carbon\Carbonite\Attribute\AttributeBase::__construct
- * @covers \Carbon\Carbonite\Attribute\AttributeBase::getArguments
+ * @covers \Carbon\Carbonite\Attribute\Freeze::__construct
+ * @covers \Carbon\Carbonite\Attribute\Freeze::up
+ * @covers \Carbon\Carbonite\Attribute\JumpTo::__construct
+ * @covers \Carbon\Carbonite\Attribute\JumpTo::up
+ * @covers \Carbon\Carbonite\Attribute\Speed::__construct
+ * @covers \Carbon\Carbonite\Attribute\Speed::up
  * @covers \Carbon\Carbonite\ReflectionCallable::__construct
  * @covers \Carbon\Carbonite\ReflectionCallable::getAttributes
  * @covers \Carbon\Carbonite\ReflectionCallable::getDocComment
  * @covers \Carbon\Carbonite\ReflectionCallable::getFileContent
  * @covers \Carbon\Carbonite\ReflectionCallable::getSource
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::fromTestCase
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUps
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAttributesAndAnnotations
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAttributes
@@ -41,15 +47,7 @@ use PHPUnit\Framework\TestCase;
  */
 class BespinTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        Bespin::up($this);
-    }
-
-    protected function tearDown(): void
-    {
-        Bespin::down($this);
-    }
+    use BespinTimeMocking;
 
     /**
      * @Freeze("2020-12-03 15:00")
@@ -108,7 +106,6 @@ class BespinTest extends TestCase
     public function testJanuaryFirst(): void
     {
         self::assertSame('01-01', Carbon::now()->format('m-d'));
-        self::assertSame(1.0, Carbonite::speed());
     }
 
     /** @Speed(10) */

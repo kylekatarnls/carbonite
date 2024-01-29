@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Carbon;
 
 use Carbon\Carbonite\Tibanna;
@@ -36,12 +38,8 @@ class Carbonite
 
     /**
      * Get fake now instance from real now instance.
-     *
-     * @param CarbonInterface $realNow
-     *
-     * @return CarbonInterface
      */
-    public static function fake(CarbonInterface $realNow): CarbonInterface
+    public static function fake(DateTimeInterface $realNow): CarbonInterface
     {
         return self::tibanna()->fake($realNow);
     }
@@ -70,7 +68,7 @@ class Carbonite
      *
      * @return float
      */
-    public static function speed(float $speed = null): float
+    public static function speed(?float $speed = null): float
     {
         return self::tibanna()->speed($speed);
     }
@@ -118,7 +116,7 @@ class Carbonite
      * @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $moment
      * @param float|null                                                                                   $speed
      */
-    public static function jumpTo($moment, float $speed = null): void
+    public static function jumpTo($moment, ?float $speed = null): void
     {
         self::tibanna()->jumpTo($moment, $speed);
     }
@@ -127,12 +125,12 @@ class Carbonite
      * Add the given duration to the fake timeline keeping the current speed.
      * A second parameter can be passed to change the speed after the jump.
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
-     * or a interval (DateInterval/CarbonInterval).
+     * or an interval (DateInterval/CarbonInterval).
      *
      * @param string|int|float|CarbonInterval|DateInterval $duration
      * @param float|null                                   $speed
      */
-    public static function elapse($duration, float $speed = null): void
+    public static function elapse($duration, ?float $speed = null): void
     {
         self::tibanna()->elapse($duration, $speed);
     }
@@ -141,12 +139,12 @@ class Carbonite
      * Subtract the given duration to the fake timeline keeping the current speed.
      * A second parameter can be passed to change the speed after the jump.
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
-     * or a interval (DateInterval/CarbonInterval).
+     * or an interval (DateInterval/CarbonInterval).
      *
      * @param string|int|float|CarbonInterval|DateInterval $duration
      * @param float|null                                   $speed
      */
-    public static function rewind($duration, float $speed = null): void
+    public static function rewind($duration, ?float $speed = null): void
     {
         self::tibanna()->rewind($duration, $speed);
     }
@@ -192,13 +190,13 @@ class Carbonite
 
     /**
      * Set the "real" now moment, it's a mock inception. It means that when you call release()
-     * You will no longer go back to present but you will fallback to the mocked now. And the
+     * You will no longer go back to present, but you will fall back to the mocked now. And the
      * mocked now will also determine the base speed to consider. If this mocked instance is
-     * static, then "real" time will be frozen and so the fake timeline too no matter the speed
+     * static, then "real" time will be frozen and so the fake timeline too, no matter the speed
      * you chose.
      *
      * This is a very low-level feature used for the internal unit tests of Carbonite and you
-     * probably won't need this methods in your own code and tests, you more likely need the
+     * probably won't need this method in your own code and tests, you more likely need the
      * freeze() or jumpTo() method.
      *
      * @param string|CarbonInterface|Closure|null $testNow
@@ -206,5 +204,31 @@ class Carbonite
     public static function mock($testNow): void
     {
         self::tibanna()->mock($testNow);
+    }
+
+    /**
+     * Register a callback that will be executed every time mock value is changed.
+     *
+     * The callback receives the default \Carbon\FactoryImmutable as parameter.
+     */
+    public static function addSynchronizer(callable $synchronizer): void
+    {
+        self::tibanna()->addSynchronizer($synchronizer);
+    }
+
+    /**
+     * Remove a callback that has been registered with addSynchronizer().
+     */
+    public static function removeSynchronizer(callable $synchronizer): void
+    {
+        self::tibanna()->removeSynchronizer($synchronizer);
+    }
+
+    /**
+     * Return the default \Carbon\FactoryImmutable instance.
+     */
+    public static function getClock(): FactoryImmutable
+    {
+        return self::tibanna()->getClock();
     }
 }
