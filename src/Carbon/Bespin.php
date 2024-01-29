@@ -13,7 +13,7 @@ class Bespin
      */
     public static function up($test): void
     {
-        $method = new ReflectionTestCallable($test);
+        $method = ReflectionTestCallable::fromTestCase($test);
         $count = 0;
 
         foreach ($method->getUps() as $instance) {

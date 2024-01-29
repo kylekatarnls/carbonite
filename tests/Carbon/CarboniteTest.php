@@ -286,9 +286,9 @@ class CarboniteTest extends TestCase
     }
 
     /**
+     * @covers \Carbon\Carbonite\UnfrozenTimeException::__construct
      * @covers ::unfreeze
      * @covers \Carbon\Carbonite\Tibanna::unfreeze
-     * @covers \Carbon\Carbonite\UnfrozenTimeException::<public>
      */
     public function testUnfreezeException(): void
     {

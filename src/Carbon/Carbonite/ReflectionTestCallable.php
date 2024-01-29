@@ -6,8 +6,20 @@ namespace Carbon\Carbonite;
 
 use Carbon\Carbonite\Attribute\UpInterface;
 
-class ReflectionTestCallable extends ReflectionCallable
+final class ReflectionTestCallable extends ReflectionCallable
 {
+    /**
+     * @param object|callable|string $test
+     */
+    public static function fromTestCase($test): self
+    {
+        $hasSortId = is_object($test) && method_exists($test, 'sortId');
+        /** @var callable|null $sortId */
+        $sortId = $hasSortId ? explode('::', $test->sortId()) : null;
+
+        return new self($sortId ?? $test);
+    }
+
     /**
      * @return iterable<UpInterface>
      */

@@ -35,6 +35,7 @@ class TibannaTest extends TestCase
 
     /**
      * @covers ::freeze
+     * @covers ::setTestNow
      */
     public function testDatePoint(): void
     {

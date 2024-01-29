@@ -123,7 +123,20 @@ class DocumentationTest extends TestCase
 
             /** @var TestCase $testCase */
             $testCase = @eval('return new class() extends '.$className.' {
-                public $methodName = "";
+                private $methodName = "";
+
+                public function __construct(?string $name = null)
+                {
+                    parent::__construct($name ?? get_class_methods(self::class)[0]);
+                }
+
+                public function forTest(string $name): self
+                {
+                    $test = new self($name);
+                    $test->methodName = $name;
+
+                    return $test;
+                }
 
                 public function getName(bool $withDataSet = true): string
                 {
@@ -137,7 +150,7 @@ class DocumentationTest extends TestCase
                 }
 
                 if (preg_match('/^test[A-Z]/', $method)) {
-                    $testCase->methodName = $method;
+                    $methodTester = $testCase->forTest($method);
                     $steps = [
                         'setUp',
                         'mockTimeWithBespin',
@@ -150,7 +163,7 @@ class DocumentationTest extends TestCase
                         if (method_exists($testCase, $step)) {
                             $methodReflection = new ReflectionMethod($testCase, $step);
                             $methodReflection->setAccessible(true);
-                            $methodReflection->invoke($testCase);
+                            $methodReflection->invoke($methodTester);
                         }
                     }
                 }
@@ -158,7 +171,7 @@ class DocumentationTest extends TestCase
         }
     }
 
-    public function getReadmeExamples(): Generator
+    public static function getReadmeExamples(): Generator
     {
         $readme = (string) file_get_contents(__DIR__.'/../../README.md');
         $codes = [];

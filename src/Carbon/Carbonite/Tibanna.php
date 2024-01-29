@@ -341,7 +341,7 @@ class Tibanna
         Carbon::setTestNow($testNow);
 
         if (!$factory) {
-            CarbonImmutable::setTestNow($testNow);
+            CarbonImmutable::setTestNow($testNow); // @codeCoverageIgnore
         }
 
         $factory = $factory ?? new FactoryImmutable();

@@ -35,6 +35,7 @@ use PHPUnit\Framework\TestCase;
  * @covers \Carbon\Carbonite\ReflectionCallable::getDocComment
  * @covers \Carbon\Carbonite\ReflectionCallable::getFileContent
  * @covers \Carbon\Carbonite\ReflectionCallable::getSource
+ * @covers \Carbon\Carbonite\ReflectionTestCallable::fromTestCase
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUps
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAttributesAndAnnotations
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAttributes
