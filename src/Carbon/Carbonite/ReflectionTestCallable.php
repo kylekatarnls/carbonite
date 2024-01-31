@@ -6,8 +6,6 @@ namespace Carbon\Carbonite;
 
 use Carbon\Carbonite\Attribute\UpInterface;
 use InvalidArgumentException;
-use PHPUnit\Framework\TestCase;
-use ReflectionProperty;
 
 final class ReflectionTestCallable extends ReflectionCallable
 {
@@ -81,26 +79,10 @@ final class ReflectionTestCallable extends ReflectionCallable
     public function getDataProvided(): iterable
     {
         if (is_object($this->test) && method_exists($this->test, 'providedData')) {
-            /** @var TestCase $test */
-            $test = $this->test;
-            $rest = [];
-            $dataChanged = false;
-
             foreach ($this->test->providedData() as $data) {
                 if ($data instanceof UpInterface) {
-                    $dataChanged = true;
                     yield $data;
-
-                    continue;
                 }
-
-                $rest[] = $data;
-            }
-
-            if ($dataChanged) {
-                $property = new ReflectionProperty(TestCase::class, 'data');
-                $property->setAccessible(true);
-                $property->setValue($test, $rest);
             }
         }
     }

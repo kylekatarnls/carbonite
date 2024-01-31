@@ -640,11 +640,33 @@ public function testNow(string $date): void
 public static function getDataSet(): array
 {
     return [
-        [new Freeze('2024-05-25'), '2024-05-25'],
-        [new Freeze('2023-12-14'), '2023-12-14'],
+        ['2024-05-25', new Freeze('2024-05-25')],
+        ['2023-12-14', new Freeze('2024-05-25')],
     ];
 }
 ```
+
+You can combine it with periods, for instance to test that
+something works every day of the month:
+<i lint-only="in-class" php-level="8"></i>
+```php
+#[DataProvider('getDataSet')]
+public function testDataProvider(): void
+{
+    $now = CarbonImmutable::now();
+    self::assertSame($now->day, $now->addMonth()->day);
+}
+
+public static function getDataSet(): iterable
+{
+    yield from Carbon::parse('2023-01-01')
+        ->daysUntil('2023-01-31')
+        ->map(static fn ($date) => [new Freeze($date)]);
+}
+```
+The test above will be for each day of January and will fail
+on 29th, 30th and 31st because it overflows from February to
+March.
 
 The `DataGroup` helper allows you to build data providers
 with multiple sets using the same time mock:

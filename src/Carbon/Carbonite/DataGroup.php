@@ -11,19 +11,19 @@ use Traversable;
 /** @implements IteratorAggregate<array> */
 final class DataGroup implements IteratorAggregate
 {
-    /** @var list<UpInterface|list<UpInterface>> */
+    /** @var (UpInterface|list<UpInterface>)[] */
     private $timeConfigs;
 
     /** @var array[] */
     private $dataSets;
 
     /**
-     * @param list<UpInterface|list<UpInterface>> $timeConfigs
-     * @param array[]                             $dataSets
+     * @param (UpInterface|list<UpInterface>)[] $timeConfigs
+     * @param array[]                           $dataSets
      */
     public function __construct(
-        array $timeConfigs,
-        array $dataSets
+        iterable $timeConfigs,
+        iterable $dataSets
     ) {
         $this->timeConfigs = $timeConfigs;
         $this->dataSets = $dataSets;
@@ -35,7 +35,7 @@ final class DataGroup implements IteratorAggregate
      */
     public static function for(
         $timeConfig,
-        array $dataSets
+        iterable $dataSets
     ): self {
         return new self([$timeConfig], $dataSets);
     }
@@ -45,8 +45,8 @@ final class DataGroup implements IteratorAggregate
      * @param array[]                             $dataSets
      */
     public static function matrix(
-        array $timeConfigs,
-        array $dataSets
+        iterable $timeConfigs,
+        iterable $dataSets
     ): self {
         return new self($timeConfigs, $dataSets);
     }
@@ -70,7 +70,7 @@ final class DataGroup implements IteratorAggregate
                     ))).' '.$key
                     : $index++;
 
-                yield $name => array_merge($timeConfigs, $dataSet);
+                yield $name => array_merge($dataSet, $timeConfigs);
             }
         }
     }

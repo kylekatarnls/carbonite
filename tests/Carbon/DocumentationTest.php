@@ -26,8 +26,12 @@ class DocumentationTest extends TestCase
      *
      * @covers ::freeze
      */
-    public function testReadmeExamples(string $example, string $lintOnly): void
+    public function testReadmeExamples(string $example, string $lintOnly, string $phpLevel): void
     {
+        if (version_compare(PHP_VERSION, $phpLevel, '<')) {
+            self::markTestSkipped('Requires PHP '.$phpLevel);
+        }
+
         Carbonite::mock(null);
         Carbonite::release();
 
@@ -203,11 +207,13 @@ class DocumentationTest extends TestCase
             $previousLine = trim(array_slice($previousLines, -2)[0] ?? '');
             $code = trim(str_replace("\r", '', $example));
             $lintOnly = '';
+            $phpLevel = '7.2';
 
             if (preg_match('/^<i.+><\/i>$/', $previousLine)) {
                 $infoTag = new SimpleXMLElement($previousLine);
                 $lintOnly = (string) ($infoTag['lint-only'] ?? '');
                 $codeId = (string) ($infoTag['code-id'] ?? '');
+                $phpLevel = (string) ($infoTag['php-level'] ?? '7.2');
 
                 if ($codeId !== '') {
                     $codes[$codeId] = $code;
@@ -226,7 +232,7 @@ class DocumentationTest extends TestCase
                 }
             }
 
-            yield [$code, $lintOnly];
+            yield [$code, $lintOnly, $phpLevel];
         }
     }
 }
