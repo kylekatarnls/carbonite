@@ -5,19 +5,26 @@ declare(strict_types=1);
 namespace Carbon\Carbonite;
 
 use Carbon\Carbonite\Attribute\UpInterface;
+use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 
 final class ReflectionTestCallable extends ReflectionCallable
 {
-    /**
-     * @param object|callable|string $test
-     */
+    /** @var object|array|string|null */
+    private $test = null;
+
     public static function fromTestCase($test): self
     {
-        $hasSortId = is_object($test) && method_exists($test, 'sortId');
-        /** @var callable|null $sortId */
-        $sortId = $hasSortId ? explode('::', $test->sortId()) : null;
+        try {
+            $instance = new self(self::getSortId($test) ?? $test);
+        } catch (InvalidArgumentException $exception) {
+            $instance = new self($test);
+        }
 
-        return new self($sortId ?? $test);
+        $instance->test = $test;
+
+        return $instance;
     }
 
     /**
@@ -39,6 +46,7 @@ final class ReflectionTestCallable extends ReflectionCallable
     {
         yield from $this->getUpAttributes();
         yield from $this->getUpAnnotations();
+        yield from $this->getDataProvided();
     }
 
     /**
@@ -59,14 +67,40 @@ final class ReflectionTestCallable extends ReflectionCallable
         }
     }
 
-    /**
-     * @return iterable<UpInterface|object>
-     */
+    /** @return iterable<UpInterface|object> */
     public function getUpAttributes(): iterable
     {
         foreach ($this->getAttributes() as $attribute) {
             if (is_a($attribute->getName(), UpInterface::class, true)) {
                 yield $attribute->newInstance();
+            }
+        }
+    }
+
+    /** @return iterable<UpInterface> */
+    public function getDataProvided(): iterable
+    {
+        if (is_object($this->test) && method_exists($this->test, 'providedData')) {
+            /** @var TestCase $test */
+            $test = $this->test;
+            $rest = [];
+            $dataChanged = false;
+
+            foreach ($this->test->providedData() as $data) {
+                if ($data instanceof UpInterface) {
+                    $dataChanged = true;
+                    yield $data;
+
+                    continue;
+                }
+
+                $rest[] = $data;
+            }
+
+            if ($dataChanged) {
+                $property = new ReflectionProperty(TestCase::class, 'data');
+                $property->setAccessible(true);
+                $property->setValue($test, $rest);
             }
         }
     }
@@ -146,5 +180,17 @@ final class ReflectionTestCallable extends ReflectionCallable
                 );
             }
         }
+    }
+
+    private static function getSortId($test): ?array
+    {
+        if (is_object($test) && method_exists($test, 'sortId')) {
+            return explode(
+                '::',
+                explode(' ', $test->sortId())[0]
+            );
+        }
+
+        return null;
     }
 }

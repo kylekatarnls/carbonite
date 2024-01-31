@@ -613,3 +613,108 @@ fakeAsync(function () {
     echo $now->diffForHumans(); // output: 2 seconds ago
 });
 ```
+
+### Data Provider
+
+When applying `use BespinTimeMocking;` on a PHPUnit
+TestCase and using `#[DataProvider]`, `@dataProvider`,
+`#[TestWith]` or `@testWith` you can insert `Freeze`,
+`JumpTo`, `Release` or `Speed`, they will be used to
+configure time mocking before starting the test then
+removed from the passed parameters:
+<i lint-only="in-class"></i>
+```php
+#[TestWith([new Freeze('2024-05-25'), '2024-05-24'])]
+#[TestWith([new Freeze('2023-01-01'), '2022-12-31'])]
+public function testYesterday(string $date): void
+{
+    self::assertSame($date, Carbon::yesterday()->format('Y-m-d'));
+}
+
+#[DataProvider('getDataSet')]
+public function testNow(string $date): void
+{
+    self::assertSame($date, Carbon::now()->format('Y-m-d'));
+}
+
+public static function getDataSet(): array
+{
+    return [
+        [new Freeze('2024-05-25'), '2024-05-25'],
+        [new Freeze('2023-12-14'), '2023-12-14'],
+    ];
+}
+```
+
+The `DataGroup` helper allows you to build data providers
+with multiple sets using the same time mock:
+<i lint-only="in-class"></i>
+```php
+#[DataProvider('getDataSet')]
+public function testDataProvider(string $date, int $days): void
+{
+    self::assertSame(
+        $date,
+        Carbon::now()->addDays($days)->format('Y-m-d'),
+    );
+}
+
+public static function getDataSet(): iterable
+{
+    yield from DataGroup::for(new Freeze('2024-05-25'), [
+        ['2024-05-27', 2],
+        ['2024-06-01', 7],
+        ['2024-06-08', 14],
+    ]);
+
+    yield from DataGroup::for(new Freeze('2023-12-30'), [
+        ['2023-12-31', 1],
+        ['2024-01-06', 7],
+        ['2024-02-03', 35],
+    ]);
+
+    yield from DataGroup::matrix([
+        new Freeze('2024-05-25'),
+        new Freeze('2023-12-14'),
+    ], [
+        'a' => ['2024-05-25'],
+        'bb' => ['2023-12-14'],
+    ]);
+}
+```
+
+And also to build a matrix to test each time config
+with each set:
+<i lint-only="in-class"></i>
+```php
+#[DataProvider('getDataSet')]
+public function testDataProvider(string $text): void
+{
+    // This test will be run 4 times:
+    // - With current time mocked to 2024-05-25 and $text = "abc"
+    // - With current time mocked to 2024-05-25 and $text = "def"
+    // - With current time mocked to 2023-12-14 and $text = "abc"
+    // - With current time mocked to 2023-12-14 and $text = "def"
+}
+
+public static function getDataSet(): iterable
+{
+    yield from DataGroup::matrix([
+        new Freeze('2024-05-25'),
+        new Freeze('2023-12-14'),
+    ], [
+        ['abc'],
+        ['def'],
+    ]);
+}
+```
+
+### Custom attributes
+
+You can create your own time mocking attributes implementing
+`UpInterface`:
+
+<i lint-only="1"></i>
+```php
+
+```

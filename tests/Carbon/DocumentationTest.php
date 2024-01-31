@@ -26,13 +26,18 @@ class DocumentationTest extends TestCase
      *
      * @covers ::freeze
      */
-    public function testReadmeExamples(string $example): void
+    public function testReadmeExamples(string $example, string $lintOnly): void
     {
         Carbonite::mock(null);
         Carbonite::release();
 
         $code = (string) str_replace('echo ', 'echo "\n", ', $example);
         $code = (string) preg_replace('/^<\?php/', '', $code);
+
+        if ($lintOnly === 'in-class') {
+            $code = 'class C'.mt_rand(0, 999999999)."{\n$code\n}";
+        }
+
         $imports = [
             Carbonite::class,
             Carbon::class,
@@ -102,11 +107,17 @@ class DocumentationTest extends TestCase
             $output = array_filter(explode("\n", trim(ob_get_contents() ?: '')), function ($line) {
                 return $line !== '';
             });
-            ob_end_clean();
         } catch (Throwable $exception) {
             self::fail($exception->getMessage()."\n\nin code:\n$code\n\nstack:\n".$exception->getTraceAsString());
         } finally {
+            ob_end_clean();
             error_reporting($level);
+        }
+
+        if ($lintOnly) {
+            self::assertTrue(true);
+
+            return;
         }
 
         preg_match_all('#//\s*outputs?:(.+)$#m', $example, $matches);
@@ -191,9 +202,11 @@ class DocumentationTest extends TestCase
 
             $previousLine = trim(array_slice($previousLines, -2)[0] ?? '');
             $code = trim(str_replace("\r", '', $example));
+            $lintOnly = '';
 
             if (preg_match('/^<i.+><\/i>$/', $previousLine)) {
                 $infoTag = new SimpleXMLElement($previousLine);
+                $lintOnly = (string) ($infoTag['lint-only'] ?? '');
                 $codeId = (string) ($infoTag['code-id'] ?? '');
 
                 if ($codeId !== '') {
@@ -213,7 +226,7 @@ class DocumentationTest extends TestCase
                 }
             }
 
-            yield [$code];
+            yield [$code, $lintOnly];
         }
     }
 }

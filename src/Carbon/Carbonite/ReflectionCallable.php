@@ -23,7 +23,7 @@ class ReflectionCallable
     protected $function = null;
 
     /**
-     * @param object|callable|string $test
+     * @param object|array|string $test
      *
      * @psalm-suppress ArgumentTypeCoercion, PossiblyInvalidArgument, PossiblyInvalidMethodCall
      *
@@ -84,9 +84,7 @@ class ReflectionCallable
             }, [Freeze::class, Speed::class, JumpTo::class]));
     }
 
-    /**
-     * @return iterable<ReflectionAttribute>
-     */
+    /** @return iterable<ReflectionAttribute> */
     public function getAttributes(): iterable
     {
         $source = $this->getSource();
