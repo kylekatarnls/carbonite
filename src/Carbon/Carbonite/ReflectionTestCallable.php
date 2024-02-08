@@ -14,8 +14,14 @@ final class ReflectionTestCallable extends ReflectionCallable
 
     public static function fromTestCase($test): self
     {
+        $sortId = self::getSortId($test) ?? $test;
+
+        if ($sortId === null) {
+            throw new InvalidArgumentException('Unable to resolve the sortId');
+        }
+
         try {
-            $instance = new self(self::getSortId($test) ?? $test);
+            $instance = new self($sortId);
         } catch (InvalidArgumentException $exception) {
             $instance = new self($test);
         }
