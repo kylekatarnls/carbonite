@@ -677,7 +677,7 @@ public function testDataProvider(string $date, int $days): void
 {
     self::assertSame(
         $date,
-        Carbon::now()->addDays($days)->format('Y-m-d'),
+        Carbon::now()->addDays($days)->format('Y-m-d')
     );
 }
 
@@ -738,5 +738,5 @@ You can create your own time mocking attributes implementing
 
 <i lint-only="1"></i>
 ```php
-
+// TODO
 ```

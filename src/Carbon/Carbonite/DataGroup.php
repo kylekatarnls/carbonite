@@ -16,15 +16,15 @@ use Traversable;
 /** @implements IteratorAggregate<array> */
 final class DataGroup implements IteratorAggregate
 {
-    /** @var list<UpInterface|string|DateTimeInterface|list<UpInterface|string|DateTimeInterface>> */
+    /** @var iterable<UpInterface|string|DateTimeInterface|list<UpInterface|string|DateTimeInterface>> */
     private $timeConfigs;
 
     /** @var array[] */
     private $dataSets;
 
     /**
-     * @param list<UpInterface|string|DateTimeInterface|list<UpInterface|string|DateTimeInterface>> $timeConfigs
-     * @param array[]                                                                               $dataSets
+     * @param iterable<UpInterface|string|DateTimeInterface|list<UpInterface|string|DateTimeInterface>> $timeConfigs
+     * @param array[]                                                                                   $dataSets
      */
     public function __construct(
         iterable $timeConfigs,
@@ -46,8 +46,8 @@ final class DataGroup implements IteratorAggregate
     }
 
     /**
-     * @param list<UpInterface|string|DateTimeInterface|list<UpInterface|string|DateTimeInterface>> $timeConfigs
-     * @param array[]                                                                               $dataSets
+     * @param iterable<UpInterface|string|DateTimeInterface|list<UpInterface|string|DateTimeInterface>> $timeConfigs
+     * @param array[]                                                                                   $dataSets
      */
     public static function matrix(
         iterable $timeConfigs,

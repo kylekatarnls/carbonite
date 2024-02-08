@@ -21,9 +21,9 @@ class BasicTest extends TestCase
     }
 
     /** @coversNothing */
-    #[Freeze("2024-01-15 08:00")]
+    #[Freeze('2024-01-15 08:00')]
     public function testFreeze(): void
     {
-        self::assertSame("2024-01-15 08:00", Carbon::now()->format("Y-m-d H:i"));
+        self::assertSame('2024-01-15 08:00', Carbon::now()->format('Y-m-d H:i'));
     }
 }
