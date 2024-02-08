@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Carbon;
 
 use PHPUnit\Framework\TestCase;
@@ -11,28 +13,11 @@ class BespinTimeMockingTest extends TestCase
 {
     public function testMocking(): void
     {
-        $testGenerator = eval('return static function (string $name) {
-            return new class ($name) extends \PHPUnit\Framework\TestCase {
-                use \Carbon\BespinTimeMocking;
-
-                /** @coversNothing */
-                public function testSpeed(): void
-                {
-                    self::assertSame(0.0, \Carbon\Carbonite::speed());
-                }
-
-                /** @coversNothing */
-                #[\Carbon\Carbonite\Attribute\Freeze("2024-01-15 08:00")]
-                public function testFreeze(): void
-                {
-                    self::assertSame("2024-01-15 08:00", \Carbon\Carbon::now()->format("Y-m-d H:i"));
-                }
-            };
-        };');
-
         ob_start();
-        $testGenerator('testSpeed')->run();
-        $testGenerator('testFreeze')->run();
+        $test = new BasicTest('testSpeed');
+        $test->run();
+        $test = new BasicTest('testFreeze');
+        $test->run();
         ob_end_clean();
     }
 }

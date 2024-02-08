@@ -7,6 +7,7 @@ namespace Carbon\Carbonite;
 use Carbon\Carbonite\Attribute\Freeze;
 use Carbon\Carbonite\Attribute\UpInterface;
 use DateTimeImmutable;
+use DateTimeInterface;
 use DateTimeZone;
 use Generator;
 use IteratorAggregate;
@@ -15,15 +16,15 @@ use Traversable;
 /** @implements IteratorAggregate<array> */
 final class DataGroup implements IteratorAggregate
 {
-    /** @var (UpInterface|list<UpInterface>)[] */
+    /** @var list<UpInterface|string|DateTimeInterface|list<UpInterface|string|DateTimeInterface>> */
     private $timeConfigs;
 
     /** @var array[] */
     private $dataSets;
 
     /**
-     * @param (UpInterface|list<UpInterface>)[] $timeConfigs
-     * @param array[]                           $dataSets
+     * @param list<UpInterface|string|DateTimeInterface|list<UpInterface|string|DateTimeInterface>> $timeConfigs
+     * @param array[]                                                                               $dataSets
      */
     public function __construct(
         iterable $timeConfigs,
@@ -34,8 +35,8 @@ final class DataGroup implements IteratorAggregate
     }
 
     /**
-     * @param UpInterface|list<UpInterface> $timeConfig
-     * @param array[]                       $dataSets
+     * @param UpInterface|string|DateTimeInterface|list<UpInterface|string|DateTimeInterface> $timeConfig
+     * @param array[]                                                                         $dataSets
      */
     public static function for(
         $timeConfig,
@@ -45,8 +46,8 @@ final class DataGroup implements IteratorAggregate
     }
 
     /**
-     * @param list<UpInterface|list<UpInterface>> $timeConfigs
-     * @param array[]                             $dataSets
+     * @param list<UpInterface|string|DateTimeInterface|list<UpInterface|string|DateTimeInterface>> $timeConfigs
+     * @param array[]                                                                               $dataSets
      */
     public static function matrix(
         iterable $timeConfigs,
@@ -56,7 +57,7 @@ final class DataGroup implements IteratorAggregate
     }
 
     /**
-     * @param string|DateTimeZone $timeZone
+     * @param non-empty-string|DateTimeZone $timeZone
      */
     public static function withVariousDates(
         iterable $dataSets,
