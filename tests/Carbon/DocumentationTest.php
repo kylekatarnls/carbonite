@@ -27,10 +27,17 @@ class DocumentationTest extends TestCase
      *
      * @covers ::freeze
      */
-    public function testReadmeExamples(string $example, string $lintOnly, string $phpLevel): void
+    public function testReadmeExamples(string $example, string $lintOnly, string $phpLevel, string $excludePhp): void
     {
         if (version_compare(PHP_VERSION, $phpLevel, '<')) {
             self::markTestSkipped('Requires PHP '.$phpLevel);
+        }
+
+        if ($excludePhp !== ''
+            && version_compare(PHP_VERSION, $excludePhp, '>=')
+            && version_compare(PHP_VERSION, "$excludePhp.999", '<')
+        ) {
+            self::markTestSkipped('Skipping PHP level '.$excludePhp);
         }
 
         Carbonite::mock(null);
@@ -217,12 +224,14 @@ class DocumentationTest extends TestCase
             $code = trim(str_replace("\r", '', $example));
             $lintOnly = '';
             $phpLevel = '7.2';
+            $excludePhp = '';
 
             if (preg_match('/^<i.+><\/i>$/', $previousLine)) {
                 $infoTag = new SimpleXMLElement($previousLine);
                 $lintOnly = (string) ($infoTag['lint-only'] ?? '');
                 $codeId = (string) ($infoTag['code-id'] ?? '');
                 $phpLevel = (string) ($infoTag['php-level'] ?? '7.2');
+                $excludePhp = (string) ($infoTag['exclude-php'] ?? '');
 
                 if ($codeId !== '') {
                     $codes[$codeId] = $code;
@@ -241,7 +250,7 @@ class DocumentationTest extends TestCase
                 }
             }
 
-            yield [$code, $lintOnly, $phpLevel];
+            yield [$code, $lintOnly, $phpLevel, $excludePhp];
         }
     }
 }

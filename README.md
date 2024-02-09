@@ -622,7 +622,7 @@ TestCase and using `#[DataProvider]`, `@dataProvider`,
 `JumpTo`, `Release` or `Speed`, they will be used to
 configure time mocking before starting the test then
 removed from the passed parameters:
-<i lint-only="in-class"></i>
+<i lint-only="in-class" exclude-php="8.0"></i>
 ```php
 #[TestWith([new Freeze('2024-05-25'), '2024-05-24'])]
 #[TestWith([new Freeze('2023-01-01'), '2022-12-31'])]
@@ -648,7 +648,7 @@ public static function getDataSet(): array
 
 You can combine it with periods, for instance to test that
 something works every day of the month:
-<i lint-only="in-class" php-level="8"></i>
+<i lint-only="in-class" php-level="7.4"></i>
 ```php
 #[DataProvider('getDataSet')]
 public function testDataProvider(): void

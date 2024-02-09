@@ -95,8 +95,10 @@ class ReflectionCallable
     /**
      * @suppress PhanUndeclaredMethod
      *
+     * @psalm-suppress MoreSpecificReturnType, LessSpecificReturnStatement
+     *
      * @return array{object|string, string|null}
-     * */
+     */
     private function getReflectionMethodParameters($test): array
     {
         if (is_array($test)) {
