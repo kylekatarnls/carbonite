@@ -7,6 +7,7 @@ use Carbon\CarbonInterval;
 use Carbon\Carbonite;
 use Carbon\CarbonPeriod;
 use Carbon\FactoryImmutable;
+use ErrorException;
 use Generator;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
@@ -105,6 +106,13 @@ class DocumentationTest extends TestCase
         $output = [];
 
         try {
+            $errorHandler = set_error_handler(
+                static function (int $severity, string $message, string $file, int $line): void {
+                    if (error_reporting() & $severity) {
+                        throw new ErrorException($message, 0, $severity, $file, $line);
+                    }
+                }
+            );
             $level = error_reporting(E_ALL & ~(E_USER_DEPRECATED | E_DEPRECATED));
             ob_start();
             eval($code);
@@ -116,6 +124,7 @@ class DocumentationTest extends TestCase
         } finally {
             ob_end_clean();
             error_reporting($level);
+            set_error_handler($errorHandler);
         }
 
         if ($lintOnly) {

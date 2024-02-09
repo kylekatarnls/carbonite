@@ -19,12 +19,12 @@ final class DataGroup implements IteratorAggregate
     /** @var iterable<UpInterface|string|DateTimeInterface|list<UpInterface|string|DateTimeInterface>> */
     private $timeConfigs;
 
-    /** @var array[] */
+    /** @var iterable<array> */
     private $dataSets;
 
     /**
      * @param iterable<UpInterface|string|DateTimeInterface|list<UpInterface|string|DateTimeInterface>> $timeConfigs
-     * @param array[]                                                                                   $dataSets
+     * @param iterable<array>                                                                           $dataSets
      */
     public function __construct(
         iterable $timeConfigs,
@@ -36,7 +36,7 @@ final class DataGroup implements IteratorAggregate
 
     /**
      * @param UpInterface|string|DateTimeInterface|list<UpInterface|string|DateTimeInterface> $timeConfig
-     * @param array[]                                                                         $dataSets
+     * @param iterable<array>                                                                 $dataSets
      */
     public static function for(
         $timeConfig,
@@ -47,7 +47,7 @@ final class DataGroup implements IteratorAggregate
 
     /**
      * @param iterable<UpInterface|string|DateTimeInterface|list<UpInterface|string|DateTimeInterface>> $timeConfigs
-     * @param array[]                                                                                   $dataSets
+     * @param iterable<array>                                                                           $dataSets
      */
     public static function matrix(
         iterable $timeConfigs,
