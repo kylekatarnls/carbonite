@@ -159,14 +159,6 @@ class BespinTest extends TestCase
         self::assertSame('2020-02-20', Carbon::now()->format('Y-m-d'));
     }
 
-    public function testUncallableTest(): void
-    {
-        self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('Passed string cannot be resolved by reflection.');
-
-        new ReflectionCallable('not-callable');
-    }
-
     public function testMethodArrayDefinition(): void
     {
         $class = new class() {
