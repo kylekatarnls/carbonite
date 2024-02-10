@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 
 /**
- * @covers \Carbon\ReflectionCallable
+ * @coversDefaultClass \Carbon\Carbonite\ReflectionCallable
  */
 class ReflectionCallableTest extends TestCase
 {
