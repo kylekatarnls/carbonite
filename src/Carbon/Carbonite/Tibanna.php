@@ -90,8 +90,19 @@ class Tibanna
      */
     public function freeze($toMoment = 'now', float $speed = 0.0): void
     {
+        static $setTestNow = null;
+
+        // @codeCoverageIgnoreStart
+        if ($setTestNow === null) {
+            $setTestNow = [
+                Carbon::class,
+                method_exists(Carbon::class, 'setTestNowAndTimezone') ? 'setTestNowAndTimezone' : 'setTestNow',
+            ];
+        }
+        // @codeCoverageIgnoreEnd
+
         $this->moment = Carbon::now()->carbonize($toMoment);
-        Carbon::setTestNow($this->testNow);
+        $setTestNow($this->testNow);
         $this->lastFrozenAt = Carbon::now();
 
         $getNow = function (CarbonInterface $realNow) {

@@ -57,15 +57,25 @@ final class DataGroup implements IteratorAggregate
     }
 
     /**
-     * @param non-empty-string|DateTimeZone $timeZone
+     * @param DateTimeZone|array<DateTimeZone|string|null>|string|null $timeZone
      */
     public static function withVariousDates(
         iterable $dataSets,
-        $timeZone = 'UTC',
+        $timeZone = null,
         array $dates = [],
         array $times = []
     ): self {
-        $tz = $timeZone instanceof DateTimeZone ? $timeZone : new DateTimeZone($timeZone);
+        $timeZones = is_array($timeZone) ? array_values($timeZone) : [$timeZone];
+        $tz = $timeZones[0] ?? null;
+
+        if ($tz === '') {
+            $tz = null;
+        }
+
+        if ($tz !== null) {
+            $tz = $tz instanceof DateTimeZone ? $tz : new DateTimeZone($tz);
+        }
+
         $realNow = new DateTimeImmutable('now', $tz);
         $dates = array_merge($dates, [
             '2024-01-01', // Start of year
@@ -85,14 +95,20 @@ final class DataGroup implements IteratorAggregate
             $realNow->format('H:i:s.u'), // Real time
         ]);
 
-        return self::matrix(self::matrixDatesAndTimes($dates, $times), $dataSets);
+        return self::matrix(self::matrixDatesAndTimes($dates, $times, $timeZones), $dataSets);
     }
 
-    public static function matrixDatesAndTimes(array $dates, array $times): Generator
+    public static function matrixDatesAndTimes(array $dates, array $times, array $timeZones = ['UTC']): Generator
     {
         foreach ($dates as $date) {
             foreach ($times as $time) {
-                yield "$date $time";
+                foreach ($timeZones as $timeZone) {
+                    if ($timeZone instanceof DateTimeZone) {
+                        $timeZone = $timeZone->getName();
+                    }
+
+                    yield "$date $time".rtrim(" $timeZone");
+                }
             }
         }
     }
@@ -143,15 +159,11 @@ final class DataGroup implements IteratorAggregate
         return new Freeze($timeConfig);
     }
 
-    private function dumpTimeConfig($timeConfig): string
+    private function dumpTimeConfig(UpInterface $timeConfig): string
     {
-        if ($timeConfig instanceof UpInterface) {
-            $chunks = explode('\\', get_class($timeConfig));
-            $properties = array_values((array) $timeConfig);
+        $chunks = explode('\\', get_class($timeConfig));
+        $properties = array_values((array) $timeConfig);
 
-            return end($chunks).'('.$properties[0].')';
-        }
-
-        return '';
+        return end($chunks).'('.$properties[0].')';
     }
 }
