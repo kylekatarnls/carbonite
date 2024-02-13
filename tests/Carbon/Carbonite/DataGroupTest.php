@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Carbon\Carbonite;
 
+use Carbon\CarbonImmutable;
 use Carbon\Carbonite\Attribute\Freeze;
 use Carbon\Carbonite\DataGroup;
 use DateTimeImmutable;
@@ -149,5 +150,33 @@ class DataGroupTest extends TestCase
             [6, new Freeze('2024-06-15 23:59:59.999999')],
             $group['Freeze(2024-06-15 23:59:59.999999) six']
         );
+    }
+
+    /**
+     * @covers ::between
+     */
+    public function testBetween(): void
+    {
+        $items = iterator_to_array(DataGroup::between('2024-02-01', '2024-03-01', [1, 2]));
+
+        self::assertCount(2, $items);
+        self::assertCount(2, $items[0]);
+        self::assertCount(2, $items[1]);
+        self::assertSame(1, $items[0][0]);
+        self::assertSame(2, $items[1][0]);
+        self::assertInstanceOf(Freeze::class, $items[0][1]);
+        self::assertInstanceOf(Freeze::class, $items[1][1]);
+
+        $items[0][1]->up();
+        $date = CarbonImmutable::now()->format('Y-m-d');
+
+        self::assertGreaterThanOrEqual('2024-02-01', $date);
+        self::assertLessThanOrEqual('2024-03-01', $date);
+
+        $items[1][1]->up();
+        $date = CarbonImmutable::now()->format('Y-m-d');
+
+        self::assertGreaterThanOrEqual('2024-02-01', $date);
+        self::assertLessThanOrEqual('2024-03-01', $date);
     }
 }
