@@ -17,6 +17,7 @@ class ReflectionTestCallableTest extends TestCase
 {
     /**
      * @covers ::getDataProvided
+     * @covers ::getTestProvidedData
      */
     public function testEmptytDataProvided(): void
     {
@@ -33,6 +34,7 @@ class ReflectionTestCallableTest extends TestCase
 
     /**
      * @covers ::getDataProvided
+     * @covers ::getTestProvidedData
      */
     public function testGetDataProvided(): void
     {

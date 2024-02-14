@@ -36,25 +36,13 @@ final class ReflectionTestCallable extends ReflectionCallable
      */
     public function getUps(): iterable
     {
-        foreach ($this->getUpAttributesAndAnnotations() as $instance) {
-            if ($instance instanceof UpInterface) {
-                yield $instance;
-            }
-        }
-    }
-
-    /**
-     * @return iterable<UpInterface|object>
-     */
-    public function getUpAttributesAndAnnotations(): iterable
-    {
         yield from $this->getUpAttributes();
         yield from $this->getUpAnnotations();
         yield from $this->getDataProvided();
     }
 
     /**
-     * @return iterable<UpInterface|object>
+     * @return iterable<UpInterface>
      */
     public function getUpAnnotations(): iterable
     {
@@ -71,7 +59,7 @@ final class ReflectionTestCallable extends ReflectionCallable
         }
     }
 
-    /** @return iterable<UpInterface|object> */
+    /** @return iterable<UpInterface> */
     public function getUpAttributes(): iterable
     {
         foreach ($this->getAttributes() as $attribute) {
@@ -84,19 +72,14 @@ final class ReflectionTestCallable extends ReflectionCallable
     /** @return iterable<UpInterface> */
     public function getDataProvided(): iterable
     {
-        if (is_object($this->test) && method_exists($this->test, 'providedData')) {
-            foreach ($this->test->providedData() as $data) {
-                if ($data instanceof UpInterface) {
-                    yield $data;
-                }
+        foreach ($this->getTestProvidedData() as $data) {
+            if ($data instanceof UpInterface) {
+                yield $data;
             }
         }
     }
 
-    /**
-     * @return UpInterface|object|null
-     */
-    protected function getUpAnnotationInstance(string $type, string $parameters): ?object
+    protected function getUpAnnotationInstance(string $type, string $parameters): ?UpInterface
     {
         $className = $this->getTypeFullQualifiedName($type);
 
@@ -167,6 +150,13 @@ final class ReflectionTestCallable extends ReflectionCallable
                     null
                 );
             }
+        }
+    }
+
+    private function getTestProvidedData(): iterable
+    {
+        if (is_object($this->test) && method_exists($this->test, 'providedData')) {
+            yield from $this->test->providedData();
         }
     }
 

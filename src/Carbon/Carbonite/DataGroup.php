@@ -98,16 +98,7 @@ final class DataGroup implements IteratorAggregate
         array $times = []
     ): self {
         $timeZones = is_array($timeZone) ? array_values($timeZone) : [$timeZone];
-        $tz = $timeZones[0] ?? null;
-
-        if ($tz === '') {
-            $tz = null;
-        }
-
-        if ($tz !== null) {
-            $tz = $tz instanceof DateTimeZone ? $tz : new DateTimeZone($tz);
-        }
-
+        $tz = self::createTimeZone($timeZones[0] ?? null);
         $realNow = new DateTimeImmutable('now', $tz);
         $dates = array_merge($dates, [
             '2024-01-01', // Start of year
@@ -145,11 +136,7 @@ final class DataGroup implements IteratorAggregate
         foreach ($dates as $date) {
             foreach ($times as $time) {
                 foreach ($timeZones as $timeZone) {
-                    if ($timeZone instanceof DateTimeZone) {
-                        $timeZone = $timeZone->getName();
-                    }
-
-                    yield "$date $time".rtrim(" $timeZone");
+                    yield "$date $time".self::getTimeZoneSuffix($timeZone);
                 }
             }
         }
@@ -196,6 +183,25 @@ final class DataGroup implements IteratorAggregate
         }
 
         return $array;
+    }
+
+    /** @psalm-suppress RiskyTruthyFalsyComparison */
+    private static function getTimeZoneSuffix($timeZone): string
+    {
+        if ($timeZone instanceof DateTimeZone) {
+            $timeZone = $timeZone->getName();
+        }
+
+        return $timeZone ? " $timeZone" : '';
+    }
+
+    private static function createTimeZone($tz): ?DateTimeZone
+    {
+        if ($tz === '' || $tz === null) {
+            return null;
+        }
+
+        return $tz instanceof DateTimeZone ? $tz : new DateTimeZone($tz);
     }
 
     private function asUp($timeConfig): UpInterface

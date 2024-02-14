@@ -82,6 +82,8 @@ class DataGroupTest extends TestCase
     /**
      * @covers ::withVariousDates
      * @covers ::matrixDatesAndTimes
+     * @covers ::createTimeZone
+     * @covers ::getTimeZoneSuffix
      */
     public function testWithVariousDates(): void
     {
