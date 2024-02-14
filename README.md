@@ -707,6 +707,7 @@ public static function getDataSet(): iterable
 
 And also to build a matrix to test each time config
 with each set:
+
 <i lint-only="in-class"></i>
 ```php
 #[DataProvider('getDataSet')]
@@ -719,9 +720,9 @@ public function testDataProvider(string $text): void
     // - With current time mocked to 2023-12-14 and $text = "def"
 }
 
-public static function getDataSet(): iterable
+public static function getDataSet(): DataGroup
 {
-    yield from DataGroup::matrix([
+    return DataGroup::matrix([
         new Freeze('2024-05-25'),
         new Freeze('2023-12-14'),
     ], [
@@ -731,12 +732,119 @@ public static function getDataSet(): iterable
 }
 ```
 
+A default `DataGroup::withVariousDates()` is provided to mock time
+a various moment that are known to trigger edge-cases such as end
+of day, end of February, etc.
+
+<i lint-only="in-class"></i>
+```php
+#[DataProvider('getDataSet')]
+public function testDataProvider(): void
+{
+}
+
+public static function getDataSet(): DataGroup
+{
+    return DataGroup::withVariousDates();
+}
+```
+
+It can be crossed with a dataset (so to test each set with each date),
+timezone to be used can be changed (with a single one or a list of multiple
+ones so to test each of them) and extra dates and times can be added:
+
+<i lint-only="in-class"></i>
+```php
+#[DataProvider('getDataSet')]
+public function testDataProvider(string $text, int $number): void
+{
+}
+
+public static function getDataSet(): DataGroup
+{
+    return DataGroup::withVariousDates(
+        [
+            ['abc', 4],
+            ['def', 6],
+        ],
+        ['America/Chicago', 'Pacific/Auckland'],
+        ['2024-12-25', '2024-12-26'],
+        ['12:00', '02:30']
+    );
+}
+```
+
+You can also pick date to mock time randomly between 2 bounds:
+
+<i lint-only="in-class"></i>
+```php
+#[DataProvider('getDataSet')]
+public function testDataProvider(): void
+{
+    // Will run 5 times, each time with now randomly picked between
+    // 2024-06-01 00:00 and 2024-09-20 00:00
+    // For instance: 2024-07-16 22:45:12.251637
+}
+
+public static function getDataSet(): DataGroup
+{
+    return DataGroup::between('2024-06-01', '2024-09-20', 5);
+}
+```
+
+Random date picking can also be used with a dataset:
+
+<i lint-only="in-class"></i>
+```php
+#[DataProvider('getDataSet')]
+public function testDataProvider(string $letter): void
+{
+    // Will run with $letter = 'a' and now picked randomly
+    // Will run with $letter = 'b' and now picked randomly
+    // Will run with $letter = 'c' and now picked randomly
+}
+
+public static function getDataSet(): DataGroup
+{
+    return DataGroup::between('2024-06-01', '2024-09-20', ['a', 'b', 'c']);
+}
+```
+
 ### Custom attributes
 
 You can create your own time mocking attributes implementing
 `UpInterface`:
 
-<i lint-only="1"></i>
+<i lint-only="1" php-level="8.0"></i>
 ```php
-// TODO
+use Carbon\Carbonite;
+use Carbon\Carbonite\Attribute\UpInterface;
+
+#[\Attribute]
+final class AtUserCreation implements UpInterface
+{
+    public function __construct(private string $username) {}
+
+    public function up() : void
+    {
+        // Let's assume as an example that the code below is how to get
+        // user creation as a Carbon or DateTime from a username in your app.
+        $creationDate = User::where('Name', $username)->first()->created_at;
+        Carbonite::freeze($creationDate);
+    }
+}
+```
+
+Then you can use the following attribute like this in your test:
+
+<i lint-only="in-class"></i>
+```php
+#[AtUserCreation('Robin')]
+public function testUserAge(): void
+{
+    Carbon::sleep(3);
+    $ageInSeconds = (int) User::where('Name', $username)->first()->created_at->diffInSeconds();
+
+    self::assertSame(3, $ageInSeconds);
+}
 ```

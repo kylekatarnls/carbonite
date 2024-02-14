@@ -56,15 +56,18 @@ final class DataGroup implements IteratorAggregate
     /**
      * Return dataset with each line frozen with a date-time randomly picked between given min and max.
      *
+     * @psalm-suppress RedundantCastGivenDocblockType
+     *
      * @param DatePeriod|DateInterval|DateTimeInterface|string|null $min
      * @param DatePeriod|DateInterval|DateTimeInterface|string|null $max
+     * @param int|iterable                                          $dataSets
      */
-    public static function between(
-        $min,
-        $max,
-        iterable $dataSets
-    ): self {
-        return self::for(RandomClock::between($min, $max), $dataSets);
+    public static function between($min, $max, $dataSets): self
+    {
+        return self::for(
+            RandomClock::between($min, $max),
+            is_iterable($dataSets) ? $dataSets : range(1, (int) $dataSets)
+        );
     }
 
     /**
@@ -89,7 +92,7 @@ final class DataGroup implements IteratorAggregate
      * @param DateTimeZone|array<DateTimeZone|string|null>|string|null $timeZone
      */
     public static function withVariousDates(
-        iterable $dataSets,
+        iterable $dataSets = [[]],
         $timeZone = null,
         array $dates = [],
         array $times = []
