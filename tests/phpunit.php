@@ -5,17 +5,6 @@ use PHPUnit\Runner\Version;
 require_once __DIR__.'/../vendor/autoload.php';
 
 $id = Version::id();
-var_dump(
-    file_exists(__DIR__.'/../vendor/phpunit/phpunit/src/Util/Xml.php'),
-    class_exists(\PHPUnit\Util\Xml::class),
-    is_callable(\PHPUnit\Util\Xml::class, 'loadFile'),
-    get_class_methods(\PHPUnit\Util\Xml::class)
-);
-
-$reflection = new ReflectionClass(\PHPUnit\Util\Xml::class);
-var_dump($reflection->getFileName());
-echo file_get_contents($reflection->getFileName());
-
 $phpunit10 = version_compare($id, '10.0', '>=');
 $config = $phpunit10 ? __DIR__.'/../phpunit.xml' : __DIR__.'/../phpunit-8.xml';
 echo "Picking $config for PHPUnit $id\n";

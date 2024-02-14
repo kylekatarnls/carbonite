@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Carbon;
 
 use PHPUnit\Framework\TestCase;
@@ -11,28 +13,30 @@ class BespinTimeMockingTest extends TestCase
 {
     public function testMocking(): void
     {
-        $testGenerator = eval('return static function (string $name) {
-            return new class ($name) extends \PHPUnit\Framework\TestCase {
-                use \Carbon\BespinTimeMocking;
-
-                /** @coversNothing */
-                public function testSpeed(): void
-                {
-                    self::assertSame(0.0, \Carbon\Carbonite::speed());
-                }
-
-                /** @coversNothing */
-                #[\Carbon\Carbonite\Attribute\Freeze("2024-01-15 08:00")]
-                public function testFreeze(): void
-                {
-                    self::assertSame("2024-01-15 08:00", \Carbon\Carbon::now()->format("Y-m-d H:i"));
-                }
-            };
-        };');
-
         ob_start();
-        $testGenerator('testSpeed')->run();
-        $testGenerator('testFreeze')->run();
+        $testSpeed = $this->getNumberOfAssertionsPerformed('testSpeed');
+        $testFreezeAttribute = $this->getNumberOfAssertionsPerformed('testFreezeAttribute');
+        $testFreezeAnnotation = $this->getNumberOfAssertionsPerformed('testFreezeAnnotation');
         ob_end_clean();
+
+        self::assertSame(1, $testSpeed);
+        self::assertSame(1, $testFreezeAttribute);
+        self::assertSame(1, $testFreezeAnnotation);
+    }
+
+    private function getNumberOfAssertionsPerformed(string $method): int
+    {
+        $test = new BasicTest($method);
+        $run = $test->run();
+
+        if (method_exists($test, 'numberOfAssertionsPerformed')) {
+            return $test->numberOfAssertionsPerformed();
+        }
+
+        if (method_exists($run, 'count')) {
+            return $run->count();
+        }
+
+        return $test->getNumAssertions();
     }
 }

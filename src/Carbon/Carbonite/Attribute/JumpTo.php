@@ -23,6 +23,7 @@ class JumpTo implements UpInterface
     /** @var ?float */
     private $speed;
 
+    /** @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $moment */
     public function __construct($moment, ?float $speed = null)
     {
         $this->moment = $moment;

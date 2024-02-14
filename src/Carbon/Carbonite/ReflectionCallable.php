@@ -23,7 +23,7 @@ class ReflectionCallable
     protected $function = null;
 
     /**
-     * @param object|callable|string $test
+     * @param object|array|string $test
      *
      * @psalm-suppress ArgumentTypeCoercion, PossiblyInvalidArgument, PossiblyInvalidMethodCall
      *
@@ -39,11 +39,7 @@ class ReflectionCallable
 
         if (!$this->function) {
             try {
-                $this->method = new ReflectionMethod(...(
-                    is_array($test)
-                        ? $test
-                        : [$test, method_exists($test, 'getName') ? $test->getName(false) : 'run']
-                ));
+                $this->method = new ReflectionMethod(...$this->getReflectionMethodParameters($test));
             } catch (ReflectionException $methodException) {
                 throw new InvalidArgumentException(
                     'Passed '.(is_object($test) ? get_class($test) : gettype($test)).
@@ -84,9 +80,7 @@ class ReflectionCallable
             }, [Freeze::class, Speed::class, JumpTo::class]));
     }
 
-    /**
-     * @return iterable<ReflectionAttribute>
-     */
+    /** @return iterable<ReflectionAttribute> */
     public function getAttributes(): iterable
     {
         $source = $this->getSource();
@@ -96,5 +90,28 @@ class ReflectionCallable
                 yield $attribute;
             }
         }
+    }
+
+    /**
+     * @suppress PhanUndeclaredMethod
+     *
+     * @psalm-suppress MoreSpecificReturnType, LessSpecificReturnStatement
+     *
+     * @return array{object|string, string|null}
+     */
+    private function getReflectionMethodParameters($test): array
+    {
+        if (is_array($test)) {
+            if ($test === []) {
+                throw new InvalidArgumentException(
+                    'Passed empty array cannot be resolved by reflection.',
+                    1
+                );
+            }
+
+            return $test;
+        }
+
+        return [$test, method_exists($test, 'getName') ? $test->getName(false) : 'run'];
     }
 }

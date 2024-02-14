@@ -7,8 +7,6 @@ namespace Carbon\Carbonite;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
-use Carbon\CarbonInterval;
-use Carbon\CarbonPeriod;
 use Carbon\FactoryImmutable;
 use Closure;
 use DateInterval;
@@ -85,13 +83,24 @@ class Tibanna
      * Freeze the time to a given moment (now by default).
      * As a second optional parameter you can choose the new time speed after the freeze (0 by default).
      *
-     * @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $toMoment
-     * @param float                                                                                        $speed
+     * @param string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $toMoment
+     * @param float                                                           $speed
      */
     public function freeze($toMoment = 'now', float $speed = 0.0): void
     {
-        $this->moment = Carbon::now()->carbonize($toMoment);
-        Carbon::setTestNow($this->testNow);
+        static $setTestNow = null;
+
+        // @codeCoverageIgnoreStart
+        if ($setTestNow === null) {
+            $setTestNow = [
+                Carbon::class,
+                method_exists(Carbon::class, 'setTestNowAndTimezone') ? 'setTestNowAndTimezone' : 'setTestNow',
+            ];
+        }
+        // @codeCoverageIgnoreEnd
+
+        $this->moment = Carbon::now()->carbonize($toMoment instanceof ClockInterface ? $toMoment->now() : $toMoment);
+        $setTestNow($this->testNow);
         $this->lastFrozenAt = Carbon::now();
 
         $getNow = function (CarbonInterface $realNow) {
@@ -177,8 +186,8 @@ class Tibanna
      * Jump to a given moment in the fake timeline keeping the current speed.
      * A second parameter can be passed to change the speed after the jump.
      *
-     * @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $moment
-     * @param float|null                                                                                   $speed
+     * @param string|DateTimeInterface|DatePeriod|DateInterval $moment
+     * @param float|null                                       $speed
      */
     public function jumpTo($moment, ?float $speed = null): void
     {
@@ -191,8 +200,8 @@ class Tibanna
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
      * or an interval (DateInterval/CarbonInterval).
      *
-     * @param string|float|CarbonInterval|DateInterval $duration
-     * @param float|null                               $speed
+     * @param string|float|DateInterval $duration
+     * @param float|null                $speed
      */
     public function elapse($duration, ?float $speed = null): void
     {
@@ -205,8 +214,8 @@ class Tibanna
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
      * or an interval (DateInterval/CarbonInterval).
      *
-     * @param string|int|float|CarbonInterval|DateInterval $duration
-     * @param float|null                                   $speed
+     * @param string|int|float|DateInterval $duration
+     * @param float|null                    $speed
      */
     public function rewind($duration, ?float $speed = null): void
     {
@@ -257,8 +266,8 @@ class Tibanna
      *
      * Returns the value returned by the given $action.
      *
-     * @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $testNow
-     * @param callable                                                                                     $action
+     * @param string|DateTimeInterface|DatePeriod|DateInterval $testNow
+     * @param callable                                         $action
      *
      * @return mixed
      */
@@ -367,9 +376,9 @@ class Tibanna
     /**
      * Call a duration method and jump to resulted date.
      *
-     * @param string                                       $method
-     * @param string|int|float|CarbonInterval|DateInterval $duration
-     * @param float|null                                   $speed
+     * @param string                        $method
+     * @param string|int|float|DateInterval $duration
+     * @param float|null                    $speed
      */
     private function callDurationMethodAndJump(string $method, $duration, float $speed = null): void
     {

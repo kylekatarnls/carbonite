@@ -5,19 +5,30 @@ declare(strict_types=1);
 namespace Carbon\Carbonite;
 
 use Carbon\Carbonite\Attribute\UpInterface;
+use InvalidArgumentException;
 
 final class ReflectionTestCallable extends ReflectionCallable
 {
-    /**
-     * @param object|callable|string $test
-     */
+    /** @var object|array|string|null */
+    private $test = null;
+
     public static function fromTestCase($test): self
     {
-        $hasSortId = is_object($test) && method_exists($test, 'sortId');
-        /** @var callable|null $sortId */
-        $sortId = $hasSortId ? explode('::', $test->sortId()) : null;
+        $sortId = self::getSortId($test) ?? $test;
 
-        return new self($sortId ?? $test);
+        if ($sortId === null) {
+            throw new InvalidArgumentException('Unable to resolve the sortId');
+        }
+
+        try {
+            $instance = new self($sortId);
+        } catch (InvalidArgumentException $exception) {
+            $instance = new self($test);
+        }
+
+        $instance->test = $test;
+
+        return $instance;
     }
 
     /**
@@ -25,24 +36,13 @@ final class ReflectionTestCallable extends ReflectionCallable
      */
     public function getUps(): iterable
     {
-        foreach ($this->getUpAttributesAndAnnotations() as $instance) {
-            if ($instance instanceof UpInterface) {
-                yield $instance;
-            }
-        }
-    }
-
-    /**
-     * @return iterable<UpInterface|object>
-     */
-    public function getUpAttributesAndAnnotations(): iterable
-    {
         yield from $this->getUpAttributes();
         yield from $this->getUpAnnotations();
+        yield from $this->getDataProvided();
     }
 
     /**
-     * @return iterable<UpInterface|object>
+     * @return iterable<UpInterface>
      */
     public function getUpAnnotations(): iterable
     {
@@ -59,9 +59,7 @@ final class ReflectionTestCallable extends ReflectionCallable
         }
     }
 
-    /**
-     * @return iterable<UpInterface|object>
-     */
+    /** @return iterable<UpInterface> */
     public function getUpAttributes(): iterable
     {
         foreach ($this->getAttributes() as $attribute) {
@@ -71,10 +69,17 @@ final class ReflectionTestCallable extends ReflectionCallable
         }
     }
 
-    /**
-     * @return UpInterface|object|null
-     */
-    protected function getUpAnnotationInstance(string $type, string $parameters): ?object
+    /** @return iterable<UpInterface> */
+    public function getDataProvided(): iterable
+    {
+        foreach ($this->getTestProvidedData() as $data) {
+            if ($data instanceof UpInterface) {
+                yield $data;
+            }
+        }
+    }
+
+    protected function getUpAnnotationInstance(string $type, string $parameters): ?UpInterface
     {
         $className = $this->getTypeFullQualifiedName($type);
 
@@ -146,5 +151,24 @@ final class ReflectionTestCallable extends ReflectionCallable
                 );
             }
         }
+    }
+
+    private function getTestProvidedData(): iterable
+    {
+        if (is_object($this->test) && method_exists($this->test, 'providedData')) {
+            yield from $this->test->providedData();
+        }
+    }
+
+    private static function getSortId($test): ?array
+    {
+        if (is_object($test) && method_exists($test, 'sortId')) {
+            return explode(
+                '::',
+                explode(' ', $test->sortId())[0]
+            );
+        }
+
+        return null;
     }
 }

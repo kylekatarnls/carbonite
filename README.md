@@ -613,3 +613,238 @@ fakeAsync(function () {
     echo $now->diffForHumans(); // output: 2 seconds ago
 });
 ```
+
+### Data Provider
+
+When applying `use BespinTimeMocking;` on a PHPUnit
+TestCase and using `#[DataProvider]`, `@dataProvider`,
+`#[TestWith]` or `@testWith` you can insert `Freeze`,
+`JumpTo`, `Release` or `Speed`, they will be used to
+configure time mocking before starting the test then
+removed from the passed parameters:
+<i lint-only="in-class" exclude-php="8.0"></i>
+```php
+#[TestWith([new Freeze('2024-05-25'), '2024-05-24'])]
+#[TestWith([new Freeze('2023-01-01'), '2022-12-31'])]
+public function testYesterday(string $date): void
+{
+    self::assertSame($date, Carbon::yesterday()->format('Y-m-d'));
+}
+
+#[DataProvider('getDataSet')]
+public function testNow(string $date): void
+{
+    self::assertSame($date, Carbon::now()->format('Y-m-d'));
+}
+
+public static function getDataSet(): array
+{
+    return [
+        ['2024-05-25', new Freeze('2024-05-25')],
+        ['2023-12-14', new Freeze('2024-05-25')],
+    ];
+}
+```
+
+You can combine it with periods, for instance to test that
+something works every day of the month:
+<i lint-only="in-class" php-level="7.4"></i>
+```php
+#[DataProvider('getDataSet')]
+public function testDataProvider(): void
+{
+    $now = CarbonImmutable::now();
+    self::assertSame($now->day, $now->addMonth()->day);
+}
+
+public static function getDataSet(): iterable
+{
+    yield from Carbon::parse('2023-01-01')
+        ->daysUntil('2023-01-31')
+        ->map(static fn ($date) => [new Freeze($date)]);
+}
+```
+The test above will be for each day of January and will fail
+on 29th, 30th and 31st because it overflows from February to
+March.
+
+The `DataGroup` helper allows you to build data providers
+with multiple sets using the same time mock:
+<i lint-only="in-class"></i>
+```php
+#[DataProvider('getDataSet')]
+public function testDataProvider(string $date, int $days): void
+{
+    self::assertSame(
+        $date,
+        Carbon::now()->addDays($days)->format('Y-m-d')
+    );
+}
+
+public static function getDataSet(): iterable
+{
+    yield from DataGroup::for(new Freeze('2024-05-25'), [
+        ['2024-05-27', 2],
+        ['2024-06-01', 7],
+        ['2024-06-08', 14],
+    ]);
+
+    yield from DataGroup::for(new Freeze('2023-12-30'), [
+        ['2023-12-31', 1],
+        ['2024-01-06', 7],
+        ['2024-02-03', 35],
+    ]);
+
+    yield from DataGroup::matrix([
+        new Freeze('2024-05-25'),
+        new Freeze('2023-12-14'),
+    ], [
+        'a' => ['2024-05-25'],
+        'bb' => ['2023-12-14'],
+    ]);
+}
+```
+
+And also to build a matrix to test each time config
+with each set:
+
+<i lint-only="in-class"></i>
+```php
+#[DataProvider('getDataSet')]
+public function testDataProvider(string $text): void
+{
+    // This test will be run 4 times:
+    // - With current time mocked to 2024-05-25 and $text = "abc"
+    // - With current time mocked to 2024-05-25 and $text = "def"
+    // - With current time mocked to 2023-12-14 and $text = "abc"
+    // - With current time mocked to 2023-12-14 and $text = "def"
+}
+
+public static function getDataSet(): DataGroup
+{
+    return DataGroup::matrix([
+        new Freeze('2024-05-25'),
+        new Freeze('2023-12-14'),
+    ], [
+        ['abc'],
+        ['def'],
+    ]);
+}
+```
+
+A default `DataGroup::withVariousDates()` is provided to mock time
+a various moment that are known to trigger edge-cases such as end
+of day, end of February, etc.
+
+<i lint-only="in-class"></i>
+```php
+#[DataProvider('getDataSet')]
+public function testDataProvider(): void
+{
+}
+
+public static function getDataSet(): DataGroup
+{
+    return DataGroup::withVariousDates();
+}
+```
+
+It can be crossed with a dataset (so to test each set with each date),
+timezone to be used can be changed (with a single one or a list of multiple
+ones so to test each of them) and extra dates and times can be added:
+
+<i lint-only="in-class"></i>
+```php
+#[DataProvider('getDataSet')]
+public function testDataProvider(string $text, int $number): void
+{
+}
+
+public static function getDataSet(): DataGroup
+{
+    return DataGroup::withVariousDates(
+        [
+            ['abc', 4],
+            ['def', 6],
+        ],
+        ['America/Chicago', 'Pacific/Auckland'],
+        ['2024-12-25', '2024-12-26'],
+        ['12:00', '02:30']
+    );
+}
+```
+
+You can also pick date to mock time randomly between 2 bounds:
+
+<i lint-only="in-class"></i>
+```php
+#[DataProvider('getDataSet')]
+public function testDataProvider(): void
+{
+    // Will run 5 times, each time with now randomly picked between
+    // 2024-06-01 00:00 and 2024-09-20 00:00
+    // For instance: 2024-07-16 22:45:12.251637
+}
+
+public static function getDataSet(): DataGroup
+{
+    return DataGroup::between('2024-06-01', '2024-09-20', 5);
+}
+```
+
+Random date picking can also be used with a dataset:
+
+<i lint-only="in-class"></i>
+```php
+#[DataProvider('getDataSet')]
+public function testDataProvider(string $letter): void
+{
+    // Will run with $letter = 'a' and now picked randomly
+    // Will run with $letter = 'b' and now picked randomly
+    // Will run with $letter = 'c' and now picked randomly
+}
+
+public static function getDataSet(): DataGroup
+{
+    return DataGroup::between('2024-06-01', '2024-09-20', ['a', 'b', 'c']);
+}
+```
+
+### Custom attributes
+
+You can create your own time mocking attributes implementing
+`UpInterface`:
+
+<i lint-only="1" php-level="8.0"></i>
+```php
+use Carbon\Carbonite;
+use Carbon\Carbonite\Attribute\UpInterface;
+
+#[\Attribute]
+final class AtUserCreation implements UpInterface
+{
+    public function __construct(private string $username) {}
+
+    public function up() : void
+    {
+        // Let's assume as an example that the code below is how to get
+        // user creation as a Carbon or DateTime from a username in your app.
+        $creationDate = User::where('Name', $username)->first()->created_at;
+        Carbonite::freeze($creationDate);
+    }
+}
+```
+
+Then you can use the following attribute like this in your test:
+
+<i lint-only="in-class"></i>
+```php
+#[AtUserCreation('Robin')]
+public function testUserAge(): void
+{
+    Carbon::sleep(3);
+    $ageInSeconds = (int) User::where('Name', $username)->first()->created_at->diffInSeconds();
+
+    self::assertSame(3, $ageInSeconds);
+}
+```

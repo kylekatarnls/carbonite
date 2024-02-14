@@ -4,7 +4,8 @@
   "type": "library",
   "require": {
     "php": "^7.2 || ^8.0",
-    "nesbot/carbon": "^2.24 || ^3.0@dev"
+    "nesbot/carbon": "^2.24 || ^3.0@dev",
+    "psr/clock": "^1.0"
   },
   "require-dev": {
     "phan/phan": "^5.4.3",

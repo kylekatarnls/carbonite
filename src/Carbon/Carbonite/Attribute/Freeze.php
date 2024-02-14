@@ -14,15 +14,17 @@ use Carbon\CarbonPeriod;
 use DateInterval;
 use DatePeriod;
 use DateTimeInterface;
+use Psr\Clock\ClockInterface;
 
 #[Attribute]
 class Freeze implements UpInterface
 {
-    /** @var string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval */
+    /** @var string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval|ClockInterface */
     private $toMoment;
     /** @var float */
     private $speed;
 
+    /** @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $toMoment */
     public function __construct($toMoment = 'now', float $speed = 0.0)
     {
         $this->toMoment = $toMoment;

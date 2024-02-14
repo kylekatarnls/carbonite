@@ -10,6 +10,7 @@ use Closure;
 use DateInterval;
 use DatePeriod;
 use DateTimeInterface;
+use Psr\Clock\ClockInterface;
 
 class Carbonite
 {
@@ -48,8 +49,8 @@ class Carbonite
      * Freeze the time to a given moment (now by default).
      * As a second optional parameter you can choose the new time speed after the freeze (0 by default).
      *
-     * @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $toMoment
-     * @param float                                                                                        $speed
+     * @param string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $toMoment
+     * @param float                                                           $speed
      */
     public static function freeze($toMoment = 'now', float $speed = 0.0): void
     {
@@ -113,8 +114,8 @@ class Carbonite
      * Jump to a given moment in the fake timeline keeping the current speed.
      * A second parameter can be passed to change the speed after the jump.
      *
-     * @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $moment
-     * @param float|null                                                                                   $speed
+     * @param string|DateTimeInterface|DatePeriod|DateInterval $moment
+     * @param float|null                                       $speed
      */
     public static function jumpTo($moment, ?float $speed = null): void
     {
@@ -127,8 +128,8 @@ class Carbonite
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
      * or an interval (DateInterval/CarbonInterval).
      *
-     * @param string|int|float|CarbonInterval|DateInterval $duration
-     * @param float|null                                   $speed
+     * @param string|int|float|DateInterval $duration
+     * @param float|null                    $speed
      */
     public static function elapse($duration, ?float $speed = null): void
     {
@@ -141,8 +142,8 @@ class Carbonite
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
      * or an interval (DateInterval/CarbonInterval).
      *
-     * @param string|int|float|CarbonInterval|DateInterval $duration
-     * @param float|null                                   $speed
+     * @param string|int|float|DateInterval $duration
+     * @param float|null                    $speed
      */
     public static function rewind($duration, ?float $speed = null): void
     {
@@ -163,8 +164,8 @@ class Carbonite
      *
      * Returns the value returned by the given $action.
      *
-     * @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $testNow
-     * @param callable                                                                                     $action
+     * @param string|DateTimeInterface|DatePeriod|DateInterval $testNow
+     * @param callable                                         $action
      *
      * @return mixed
      */

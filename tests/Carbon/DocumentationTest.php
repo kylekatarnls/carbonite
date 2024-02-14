@@ -7,6 +7,7 @@ use Carbon\CarbonInterval;
 use Carbon\Carbonite;
 use Carbon\CarbonPeriod;
 use Carbon\FactoryImmutable;
+use ErrorException;
 use Generator;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
@@ -26,13 +27,29 @@ class DocumentationTest extends TestCase
      *
      * @covers ::freeze
      */
-    public function testReadmeExamples(string $example): void
+    public function testReadmeExamples(string $example, string $lintOnly, string $phpLevel, string $excludePhp): void
     {
+        if (version_compare(PHP_VERSION, $phpLevel, '<')) {
+            self::markTestSkipped('Requires PHP '.$phpLevel);
+        }
+
+        if ($excludePhp !== ''
+            && version_compare(PHP_VERSION, $excludePhp, '>=')
+            && version_compare(PHP_VERSION, "$excludePhp.999", '<')
+        ) {
+            self::markTestSkipped('Skipping PHP level '.$excludePhp);
+        }
+
         Carbonite::mock(null);
         Carbonite::release();
 
         $code = (string) str_replace('echo ', 'echo "\n", ', $example);
         $code = (string) preg_replace('/^<\?php/', '', $code);
+
+        if ($lintOnly === 'in-class') {
+            $code = 'class C'.mt_rand(0, 999999999)."{\n$code\n}";
+        }
+
         $imports = [
             Carbonite::class,
             Carbon::class,
@@ -96,17 +113,31 @@ class DocumentationTest extends TestCase
         $output = [];
 
         try {
+            $errorHandler = set_error_handler(
+                static function (int $severity, string $message, string $file, int $line): void {
+                    if (error_reporting() & $severity) {
+                        throw new ErrorException($message, 0, $severity, $file, $line);
+                    }
+                }
+            );
             $level = error_reporting(E_ALL & ~(E_USER_DEPRECATED | E_DEPRECATED));
             ob_start();
             eval($code);
             $output = array_filter(explode("\n", trim(ob_get_contents() ?: '')), function ($line) {
                 return $line !== '';
             });
-            ob_end_clean();
         } catch (Throwable $exception) {
             self::fail($exception->getMessage()."\n\nin code:\n$code\n\nstack:\n".$exception->getTraceAsString());
         } finally {
+            ob_end_clean();
             error_reporting($level);
+            set_error_handler($errorHandler);
+        }
+
+        if ($lintOnly) {
+            self::assertTrue(true);
+
+            return;
         }
 
         preg_match_all('#//\s*outputs?:(.+)$#m', $example, $matches);
@@ -191,10 +222,16 @@ class DocumentationTest extends TestCase
 
             $previousLine = trim(array_slice($previousLines, -2)[0] ?? '');
             $code = trim(str_replace("\r", '', $example));
+            $lintOnly = '';
+            $phpLevel = '7.2';
+            $excludePhp = '';
 
             if (preg_match('/^<i.+><\/i>$/', $previousLine)) {
                 $infoTag = new SimpleXMLElement($previousLine);
+                $lintOnly = (string) ($infoTag['lint-only'] ?? '');
                 $codeId = (string) ($infoTag['code-id'] ?? '');
+                $phpLevel = (string) ($infoTag['php-level'] ?? '7.2');
+                $excludePhp = (string) ($infoTag['exclude-php'] ?? '');
 
                 if ($codeId !== '') {
                     $codes[$codeId] = $code;
@@ -213,7 +250,7 @@ class DocumentationTest extends TestCase
                 }
             }
 
-            yield [$code];
+            yield [$code, $lintOnly, $phpLevel, $excludePhp];
         }
     }
 }

@@ -13,11 +13,9 @@ use Carbon\Carbonite\Attribute\JumpTo;
 use Carbon\Carbonite\Attribute\Release;
 use Carbon\Carbonite\Attribute\Speed;
 use Carbon\Carbonite\Attribute\UpInterface;
-use Carbon\Carbonite\ReflectionCallable;
 use Carbon\Carbonite\{Attribute\Freeze as Froze};
 // @codingStandardsIgnoreEnd
 use DateTimeImmutable;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -37,7 +35,6 @@ use PHPUnit\Framework\TestCase;
  * @covers \Carbon\Carbonite\ReflectionCallable::getSource
  * @covers \Carbon\Carbonite\ReflectionTestCallable::fromTestCase
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUps
- * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAttributesAndAnnotations
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAttributes
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAnnotations
  * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAnnotationInstance
@@ -157,14 +154,6 @@ class BespinTest extends TestCase
         $jumpTo->up();
         self::assertSame(2.0, Carbonite::speed());
         self::assertSame('2020-02-20', Carbon::now()->format('Y-m-d'));
-    }
-
-    public function testUncallableTest(): void
-    {
-        self::expectException(InvalidArgumentException::class);
-        self::expectExceptionMessage('Passed string cannot be resolved by reflection.');
-
-        new ReflectionCallable('not-callable');
     }
 
     public function testMethodArrayDefinition(): void
