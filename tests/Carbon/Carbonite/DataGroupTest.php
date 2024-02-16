@@ -9,20 +9,12 @@ use Carbon\Carbonite\Attribute\Freeze;
 use Carbon\Carbonite\DataGroup;
 use DateTimeImmutable;
 use DateTimeZone;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @coversDefaultClass \Carbon\Carbonite\DataGroup
- */
+#[CoversClass(DataGroup::class)]
 class DataGroupTest extends TestCase
 {
-    /**
-     * @covers ::__construct
-     * @covers ::getTimeConfigs
-     * @covers ::matrix
-     * @covers ::getIterator
-     * @covers ::asUp
-     */
     public function testBasicMatrix(): void
     {
         $group = DataGroup::matrix(['2024-02-10', '2024-02-15'], [3, 6]);
@@ -45,14 +37,6 @@ class DataGroupTest extends TestCase
         ], iterator_to_array($group));
     }
 
-    /**
-     * @covers ::__construct
-     * @covers ::getTimeConfigs
-     * @covers ::matrix
-     * @covers ::getIterator
-     * @covers ::asUp
-     * @covers ::dumpTimeConfig
-     */
     public function testKeyedMatrix(): void
     {
         $group = DataGroup::matrix(['2024-02-10', '2024-02-15'], ['three' => 3, 'six' => 6]);
@@ -65,10 +49,6 @@ class DataGroupTest extends TestCase
         ], iterator_to_array($group));
     }
 
-    /**
-     * @covers ::for
-     * @covers ::getTimeConfigs
-     */
     public function testFor(): void
     {
         $group = DataGroup::for('2024-02-10', [3, 6]);
@@ -79,12 +59,6 @@ class DataGroupTest extends TestCase
         ], iterator_to_array($group));
     }
 
-    /**
-     * @covers ::withVariousDates
-     * @covers ::matrixDatesAndTimes
-     * @covers ::createTimeZone
-     * @covers ::getTimeZoneSuffix
-     */
     public function testWithVariousDates(): void
     {
         $group = iterator_to_array(DataGroup::withVariousDates(['three' => 3, 'six' => 6]));
@@ -154,9 +128,6 @@ class DataGroupTest extends TestCase
         );
     }
 
-    /**
-     * @covers ::between
-     */
     public function testBetween(): void
     {
         $items = iterator_to_array(DataGroup::between('2024-02-01', '2024-03-01', [1, 2]));

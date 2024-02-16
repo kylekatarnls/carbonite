@@ -13,27 +13,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: [ '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3' ]
-        carbon: [ '^2.24' ]
+        php: [ '8.2', '8.3' ]
         setup: [ 'lowest', 'stable', 'next' ]
-        include:
-          - carbon: '^3.0.0'
-            php: '8.1'
-            setup: 'lowest'
-          - carbon: '^3.0.0'
-            php: '8.1'
-            setup: 'next'
-          - carbon: '^3.0.0'
-            php: '8.2'
-            setup: 'stable'
-          - carbon: '^3.0.0'
-            php: '8.3'
-            setup: 'lowest'
-          - carbon: '^3.0.0'
-            php: '8.3'
-            setup: 'stable'
 
-    name: PHP ${{ matrix.php }} - Carbon ${{ matrix.carbon }} - ${{ matrix.setup }}
+    name: PHP ${{ matrix.php }} - ${{ matrix.setup }}
 
     steps:
       - uses: actions/checkout@v2
@@ -55,114 +38,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-php-${{ matrix.php }}-c-${{ startsWith(matrix.carbon, '^3') && '3' || '2' }}-${{ matrix.setup }}-
 
-      - name: Select Carbon version
-        if: steps.composer-cache.outputs.cache-hit != 'true'
-        run: composer require nesbot/carbon:${{ matrix.carbon }}
-
       - name: Install dependencies
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: |
-          composer remove --no-update friendsofphp/php-cs-fixer phpstan/phpstan phan/phan vimeo/psalm phpmd/phpmd --dev --no-interaction;
-          composer require --no-update psr/clock:^1.0 --no-interaction;
+          composer remove --no-update phpstan/phpstan phan/phan vimeo/psalm phpmd/phpmd squizlabs/php_codesniffer friendsofphp/php-cs-fixer --no-interaction;
           composer update --prefer-dist --no-progress ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }};
-
-      - name: Fix compatibility
-        run: php tests/fix-compatibility.php
 
       - name: Run test suite
-        run: composer phpunit
-
-  coverage:
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        php: [8.3]
-        carbon: ['^3.0.0']
-        setup: ['stable']
-
-    name: Coverage - PHP ${{ matrix.php }} - ${{ matrix.setup }}
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php }}
-        extensions: json
-        tools: composer:v2
-        coverage: xdebug
-
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v2
-      with:
-        path: vendor
-        key: ${{ runner.os }}-cov-php-${{ matrix.php }}-${{ matrix.setup }}-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-cov-php-${{ matrix.php }}-${{ matrix.setup }}-
-
-    - name: Select Carbon version
-      if: matrix.carbon && steps.composer-cache.outputs.cache-hit != 'true'
-      run: composer require nesbot/carbon:${{ matrix.carbon }}
-
-    - name: Install dependencies
-      if: steps.composer-cache.outputs.cache-hit != 'true'
-      run: |
-        composer remove --no-update phpstan/phpstan phan/phan vimeo/psalm phpmd/phpmd --no-interaction;
-        composer update --prefer-dist --no-progress ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }};
-
-    - name: Coverage
-      run: php -d memory_limit=-1 -d zend.enable_gc=0 tests/phpunit.php --coverage
-
-    - name: Code Climate
-      uses: paambaati/codeclimate-action@v2.7.4
-      env:
-        CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-
-    - name: CodeCov
-      run: bash <(curl -s https://codecov.io/bash)
-
-  style:
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        php: [8.3]
-        setup: ['stable']
-
-    name: Style - PHP ${{ matrix.php }} - ${{ matrix.setup }}
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: ast, json
-          tools: composer:v2
-          coverage: none
-
-      - name: Cache Composer packages
-        id: composer-cache
-        uses: actions/cache@v2
-        with:
-          path: vendor
-          key: ${{ runner.os }}-style-php-${{ matrix.php }}-${{ matrix.setup }}-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-style-php-${{ matrix.php }}-${{ matrix.setup }}-
-
-      - name: Install dependencies
-        if: steps.composer-cache.outputs.cache-hit != 'true'
-        run: |
-          composer require --no-update symfony/clock:^7 friendsofphp/php-cs-fixer:^2.16 --no-interaction;
-          composer update --prefer-dist --no-progress ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }};
-
-      - name: Check style
-        run: composer style-check
-        env:
-          PHP_CS_FIXER_IGNORE_ENV: true
+        run: vendor/bin/phpunit --display-incomplete --display-skipped --display-deprecations --display-errors --display-notices --display-warnings --coverage-text

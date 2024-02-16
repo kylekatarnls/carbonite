@@ -6,18 +6,12 @@ namespace Carbonite;
 
 use Carbon\Carbonite\DataGroup;
 use Carbon\Carbonite\RandomClock;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @coversDefaultClass \Carbon\Carbonite\RandomClock
- */
+#[CoversClass(RandomClock::class)]
 class RandomClockTest extends TestCase
 {
-    /**
-     * @covers ::__construct
-     * @covers ::between
-     * @covers ::now
-     */
     public function testBasicMatrix(): void
     {
         $clock = RandomClock::between('2024-02-01', '2024-03-01');
@@ -30,9 +24,6 @@ class RandomClockTest extends TestCase
         }
     }
 
-    /**
-     * @covers ::repeat
-     */
     public function testRepeat(): void
     {
         $clock = RandomClock::between('2024-02-01', '2024-03-01');

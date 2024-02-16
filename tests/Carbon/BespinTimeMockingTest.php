@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Carbon;
 
+use Carbon\BespinTimeMocking;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @covers \Carbon\BespinTimeMocking
- */
+#[CoversClass(BespinTimeMocking::class)]
 class BespinTimeMockingTest extends TestCase
 {
     public function testMocking(): void

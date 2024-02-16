@@ -17,24 +17,16 @@ class Carbonite
     /**
      * The Tibanna instance is our singleton instance because any time action with the Carbonite
      * needs Tibanna gas.
-     *
-     * @var Tibanna|null
      */
-    private static $tibanna = null;
+    private static ?Tibanna $tibanna = null;
 
     /**
      * The Tibanna instance is our singleton instance because any action with the Carbonite
      * needs Tibanna gas.
-     *
-     * @return Tibanna
      */
     private static function tibanna(): Tibanna
     {
-        if (self::$tibanna === null) {
-            self::$tibanna = new Tibanna();
-        }
-
-        return self::$tibanna;
+        return self::$tibanna ??= new Tibanna();
     }
 
     /**
@@ -48,12 +40,11 @@ class Carbonite
     /**
      * Freeze the time to a given moment (now by default).
      * As a second optional parameter you can choose the new time speed after the freeze (0 by default).
-     *
-     * @param string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $toMoment
-     * @param float                                                           $speed
      */
-    public static function freeze($toMoment = 'now', float $speed = 0.0): void
-    {
+    public static function freeze(
+        string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $toMoment = 'now',
+        float $speed = 0.0,
+    ): void {
         self::tibanna()->freeze($toMoment, $speed);
     }
 
@@ -64,10 +55,6 @@ class Carbonite
      *  - 0.5 = Time passes twice more slowly;
      *  - 1 = Real life speed;
      *  - 2 = Time passes twice as fast.
-     *
-     * @param float|null $speed
-     *
-     * @return float
      */
     public static function speed(?float $speed = null): float
     {
@@ -77,10 +64,6 @@ class Carbonite
     /**
      * Speed up the time in the fake timeline by the given factor.
      * Returns the new speed.
-     *
-     * @param float $factor
-     *
-     * @return float
      */
     public static function accelerate(float $factor): float
     {
@@ -90,10 +73,6 @@ class Carbonite
     /**
      * Slow down the time in the fake timeline by the given factor.
      * Returns the new speed.
-     *
-     * @param float $factor
-     *
-     * @return float
      */
     public static function decelerate(float $factor): float
     {
@@ -113,12 +92,11 @@ class Carbonite
     /**
      * Jump to a given moment in the fake timeline keeping the current speed.
      * A second parameter can be passed to change the speed after the jump.
-     *
-     * @param string|DateTimeInterface|DatePeriod|DateInterval $moment
-     * @param float|null                                       $speed
      */
-    public static function jumpTo($moment, ?float $speed = null): void
-    {
+    public static function jumpTo(
+        string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $moment,
+        ?float $speed = null,
+    ): void {
         self::tibanna()->jumpTo($moment, $speed);
     }
 
@@ -127,11 +105,8 @@ class Carbonite
      * A second parameter can be passed to change the speed after the jump.
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
      * or an interval (DateInterval/CarbonInterval).
-     *
-     * @param string|int|float|DateInterval $duration
-     * @param float|null                    $speed
      */
-    public static function elapse($duration, ?float $speed = null): void
+    public static function elapse(string|int|float|DateInterval  $duration, ?float $speed = null): void
     {
         self::tibanna()->elapse($duration, $speed);
     }
@@ -141,11 +116,8 @@ class Carbonite
      * A second parameter can be passed to change the speed after the jump.
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
      * or an interval (DateInterval/CarbonInterval).
-     *
-     * @param string|int|float|DateInterval $duration
-     * @param float|null                    $speed
      */
-    public static function rewind($duration, ?float $speed = null): void
+    public static function rewind(string|int|float|DateInterval $duration, ?float $speed = null): void
     {
         self::tibanna()->rewind($duration, $speed);
     }
@@ -163,14 +135,11 @@ class Carbonite
      * speed once it's done, rather it succeeded or threw an error or an exception.
      *
      * Returns the value returned by the given $action.
-     *
-     * @param string|DateTimeInterface|DatePeriod|DateInterval $testNow
-     * @param callable                                         $action
-     *
-     * @return mixed
      */
-    public static function do($testNow, callable $action)
-    {
+    public static function do(
+        string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $testNow,
+        callable $action,
+    ): mixed {
         return self::tibanna()->do($testNow, $action);
     }
 
@@ -179,12 +148,8 @@ class Carbonite
      * speed once it's done, rather it succeeded or threw an error or an exception.
      *
      * Returns the value returned by the given $action.
-     *
-     * @param callable $action
-     *
-     * @return mixed
      */
-    public static function doNow(callable $action)
+    public static function doNow(callable $action): mixed
     {
         return self::tibanna()->do('now', $action);
     }
@@ -199,10 +164,8 @@ class Carbonite
      * This is a very low-level feature used for the internal unit tests of Carbonite and you
      * probably won't need this method in your own code and tests, you more likely need the
      * freeze() or jumpTo() method.
-     *
-     * @param string|CarbonInterface|Closure|null $testNow
      */
-    public static function mock($testNow): void
+    public static function mock(string|CarbonInterface|Closure|null $testNow): void
     {
         self::tibanna()->mock($testNow);
     }

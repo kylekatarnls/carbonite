@@ -2,23 +2,22 @@
 
 namespace Tests\Carbon;
 
+use Carbon\BespinTimeMocking;
 use Carbon\Carbon;
 use Carbon\Carbonite\Tibanna;
 use Carbon\FactoryImmutable;
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Clock\ClockInterface;
 use ReflectionMethod;
 use Symfony\Component\Clock\DatePoint;
 
-/**
- * @coversDefaultClass \Carbon\Carbonite\Tibanna
- */
+#[CoversClass(Tibanna::class)]
 class TibannaTest extends TestCase
 {
-    /**
-     * @covers ::callStaticMethodIfAvailable
-     */
+    use BespinTimeMocking;
+
     public function testCallStaticMethodIfAvailable(): void
     {
         $method = new ReflectionMethod(Tibanna::class, 'callStaticMethodIfAvailable');
@@ -33,10 +32,6 @@ class TibannaTest extends TestCase
         self::assertNull($result);
     }
 
-    /**
-     * @covers ::freeze
-     * @covers ::setTestNow
-     */
     public function testDatePoint(): void
     {
         if (!class_exists(DatePoint::class)) {
@@ -58,11 +53,6 @@ class TibannaTest extends TestCase
         self::assertLessThan('2000-01-01 00:00:00.010000', $date->format('Y-m-d H:i:s.u'));
     }
 
-    /**
-     * @covers ::addSynchronizer
-     * @covers ::removeSynchronizer
-     * @covers ::setTestNow
-     */
     public function testSynchronizer(): void
     {
         $calls = 0;
@@ -83,10 +73,6 @@ class TibannaTest extends TestCase
         self::assertSame(2, $calls);
     }
 
-    /**
-     * @covers ::getClock
-     * @covers ::getDefaultClock
-     */
     public function testGetClock(): void
     {
         $tibanna = new Tibanna();

@@ -4,18 +4,19 @@ namespace Tests\Carbon;
 
 use Carbon\Carbon;
 use Carbon\Carbonite;
+use Carbon\Carbonite\Tibanna;
 use Carbon\Carbonite\UnfrozenTimeException;
 use Carbon\FactoryImmutable;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
 use Exception;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 
-/**
- * @coversDefaultClass \Carbon\Carbonite
- */
+#[CoversClass(Carbonite::class)]
+#[CoversClass(Tibanna::class)]
 class CarboniteTest extends TestCase
 {
     protected function setUp(): void
@@ -24,11 +25,6 @@ class CarboniteTest extends TestCase
         Carbonite::release();
     }
 
-    /**
-     * @covers ::mock
-     * @covers ::tibanna
-     * @covers \Carbon\Carbonite\Tibanna::mock
-     */
     public function testMock(): void
     {
         Carbonite::mock(Carbon::parse('2000-01-01'));
@@ -60,10 +56,6 @@ class CarboniteTest extends TestCase
         self::assertLessThan(1, abs($mock - $real));
     }
 
-    /**
-     * @covers ::fake
-     * @covers \Carbon\Carbonite\Tibanna::fake
-     */
     public function testFake(): void
     {
         $before = new DateTimeImmutable('now');
@@ -96,11 +88,6 @@ class CarboniteTest extends TestCase
         Carbonite::mock(null);
     }
 
-    /**
-     * @covers ::freeze
-     * @covers \Carbon\Carbonite\Tibanna::freeze
-     * @covers \Carbon\Carbonite\Tibanna::setTestNow
-     */
     public function testFreeze(): void
     {
         Carbonite::mock('2019-08-24 10:25:12.110402');
@@ -148,10 +135,6 @@ class CarboniteTest extends TestCase
         self::assertSame('1789-07-20', Carbon::now()->format('Y-m-d'));
     }
 
-    /**
-     * @covers ::speed
-     * @covers \Carbon\Carbonite\Tibanna::speed
-     */
     public function testSpeed(): void
     {
         $seconds = 0;
@@ -220,10 +203,6 @@ class CarboniteTest extends TestCase
         self::assertGreaterThan($nextSecond, $now);
     }
 
-    /**
-     * @covers ::accelerate
-     * @covers \Carbon\Carbonite\Tibanna::accelerate
-     */
     public function testAccelerate(): void
     {
         Carbonite::speed(0.0);
@@ -245,10 +224,6 @@ class CarboniteTest extends TestCase
         self::assertSame(10.0, Carbonite::speed());
     }
 
-    /**
-     * @covers ::decelerate
-     * @covers \Carbon\Carbonite\Tibanna::decelerate
-     */
     public function testDecelerate(): void
     {
         Carbonite::speed(0.0);
@@ -270,10 +245,6 @@ class CarboniteTest extends TestCase
         self::assertEqualsWithDelta(1 / 10, Carbonite::speed(), 0.000000001);
     }
 
-    /**
-     * @covers ::unfreeze
-     * @covers \Carbon\Carbonite\Tibanna::unfreeze
-     */
     public function testUnfreeze(): void
     {
         Carbonite::freeze();
@@ -285,11 +256,6 @@ class CarboniteTest extends TestCase
         self::assertSame(1.0, Carbonite::speed());
     }
 
-    /**
-     * @covers \Carbon\Carbonite\UnfrozenTimeException::__construct
-     * @covers ::unfreeze
-     * @covers \Carbon\Carbonite\Tibanna::unfreeze
-     */
     public function testUnfreezeException(): void
     {
         self::expectException(UnfrozenTimeException::class);
@@ -299,10 +265,6 @@ class CarboniteTest extends TestCase
         Carbonite::unfreeze();
     }
 
-    /**
-     * @covers ::jumpTo
-     * @covers \Carbon\Carbonite\Tibanna::jumpTo
-     */
     public function testJumpTo(): void
     {
         Carbonite::speed(2.0);
@@ -317,11 +279,6 @@ class CarboniteTest extends TestCase
         self::assertSame(3.0, Carbonite::speed());
     }
 
-    /**
-     * @covers ::elapse
-     * @covers \Carbon\Carbonite\Tibanna::elapse
-     * @covers \Carbon\Carbonite\Tibanna::callDurationMethodAndJump
-     */
     public function testElapse(): void
     {
         Carbonite::speed(2.0);
@@ -353,10 +310,6 @@ class CarboniteTest extends TestCase
         self::assertSame('2019-08-01 00:00:18', Carbon::now()->format('Y-m-d H:i:s'));
     }
 
-    /**
-     * @covers ::rewind
-     * @covers \Carbon\Carbonite\Tibanna::rewind
-     */
     public function testRewind(): void
     {
         Carbonite::speed(2.0);
@@ -388,10 +341,6 @@ class CarboniteTest extends TestCase
         self::assertSame('2019-08-01 00:00:12', Carbon::now()->format('Y-m-d H:i:s'));
     }
 
-    /**
-     * @covers ::release
-     * @covers \Carbon\Carbonite\Tibanna::release
-     */
     public function testRelease(): void
     {
         Carbonite::freeze('2019-08-24');
@@ -405,10 +354,6 @@ class CarboniteTest extends TestCase
         self::assertSame(1.0, Carbonite::speed());
     }
 
-    /**
-     * @covers ::do
-     * @covers \Carbon\Carbonite\Tibanna::do
-     */
     public function testDo(): void
     {
         [
@@ -445,10 +390,6 @@ class CarboniteTest extends TestCase
         self::assertLessThan(500, Carbon::now()->diffInMicroseconds(new DateTime()));
     }
 
-    /**
-     * @covers ::do
-     * @covers \Carbon\Carbonite\Tibanna::do
-     */
     public function testDoWithError(): void
     {
         $date = null;
@@ -471,10 +412,6 @@ class CarboniteTest extends TestCase
         self::assertLessThan(500, Carbon::now()->diffInMicroseconds(new DateTime()));
     }
 
-    /**
-     * @covers ::doNow
-     * @covers \Carbon\Carbonite\Tibanna::do
-     */
     public function testDoNow(): void
     {
         [
@@ -513,9 +450,6 @@ class CarboniteTest extends TestCase
         self::assertSame(0.0, round(Carbon::now()->floatDiffInSeconds(new DateTime()) / 3));
     }
 
-    /**
-     * @covers ::tibanna
-     */
     public function testTibannaAutoRegeneration(): void
     {
         $property = new ReflectionProperty(Carbonite::class, 'tibanna');
@@ -526,10 +460,6 @@ class CarboniteTest extends TestCase
         self::assertSame('2022-03-15', Carbon::now()->format('Y-m-d'));
     }
 
-    /**
-     * @covers ::addSynchronizer
-     * @covers ::removeSynchronizer
-     */
     public function testSynchronizer(): void
     {
         $calls = 0;
@@ -549,9 +479,6 @@ class CarboniteTest extends TestCase
         self::assertSame(2, $calls);
     }
 
-    /**
-     * @covers ::getClock
-     */
     public function testGetClock(): void
     {
         self::assertInstanceOf(FactoryImmutable::class, Carbonite::getClock());

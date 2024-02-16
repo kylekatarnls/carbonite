@@ -10,6 +10,8 @@ use Carbon\FactoryImmutable;
 use ErrorException;
 use Generator;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Clock\ClockInterface;
 use ReflectionMethod;
@@ -17,16 +19,10 @@ use SimpleXMLElement;
 use Symfony\Component\Clock\DatePoint;
 use Throwable;
 
-/**
- * @coversDefaultClass \Carbon\Carbonite
- */
+#[CoversClass(Carbonite::class)]
 class DocumentationTest extends TestCase
 {
-    /**
-     * @dataProvider getReadmeExamples
-     *
-     * @covers ::freeze
-     */
+    #[DataProvider('getReadmeExamples')]
     public function testReadmeExamples(string $example, string $lintOnly, string $phpLevel, string $excludePhp): void
     {
         if (version_compare(PHP_VERSION, $phpLevel, '<')) {

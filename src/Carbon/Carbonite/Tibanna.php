@@ -19,39 +19,31 @@ class Tibanna
 {
     /**
      * Current base moment of the fake timeline.
-     *
-     * @var CarbonInterface|null
      */
-    private $moment = null;
+    private ?CarbonInterface $moment = null;
 
     /**
      * Last real moment when the time speed changed.
-     *
-     * @var CarbonInterface|null
      */
-    private $lastFrozenAt = null;
+    private ?CarbonInterface $lastFrozenAt = null;
 
     /**
      * Speed of the fake timeline.
-     *
-     * @var float
      */
-    private $speed = 1.0;
+    private float $speed = 1.0;
 
     /**
      * The mocked now instance to test Carbonite itself with fake time.
      * Because nothing is real.
-     *
-     * @var Closure|CarbonInterface|null
      */
-    private $testNow = null;
+    private Closure|CarbonInterface|null $testNow = null;
 
     /**
      * List of callbacks to execute when changing mocked date.
      *
      * @var callable[]
      */
-    private $synchronizers = [];
+    private array $synchronizers = [];
 
     /**
      * Get fake now instance from real now instance.
@@ -82,12 +74,11 @@ class Tibanna
     /**
      * Freeze the time to a given moment (now by default).
      * As a second optional parameter you can choose the new time speed after the freeze (0 by default).
-     *
-     * @param string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $toMoment
-     * @param float                                                           $speed
      */
-    public function freeze($toMoment = 'now', float $speed = 0.0): void
-    {
+    public function freeze(
+        string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $toMoment = 'now',
+        float $speed = 0.0,
+    ): void {
         static $setTestNow = null;
 
         // @codeCoverageIgnoreStart
@@ -128,10 +119,6 @@ class Tibanna
      *  - 0.5 = Time passes twice more slowly;
      *  - 1 = Real life speed;
      *  - 2 = Time passes twice as fast.
-     *
-     * @param float|null $speed
-     *
-     * @return float
      */
     public function speed(?float $speed = null): float
     {
@@ -145,10 +132,6 @@ class Tibanna
     /**
      * Speed up the time in the fake timeline by the given factor.
      * Returns the new speed.
-     *
-     * @param float $factor
-     *
-     * @return float
      */
     public function accelerate(float $factor): float
     {
@@ -158,10 +141,6 @@ class Tibanna
     /**
      * Slow down the time in the fake timeline by the given factor.
      * Returns the new speed.
-     *
-     * @param float $factor
-     *
-     * @return float
      */
     public function decelerate(float $factor): float
     {
@@ -185,12 +164,11 @@ class Tibanna
     /**
      * Jump to a given moment in the fake timeline keeping the current speed.
      * A second parameter can be passed to change the speed after the jump.
-     *
-     * @param string|DateTimeInterface|DatePeriod|DateInterval $moment
-     * @param float|null                                       $speed
      */
-    public function jumpTo($moment, ?float $speed = null): void
-    {
+    public function jumpTo(
+        string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $moment,
+        ?float $speed = null,
+    ): void {
         $this->freeze($moment, $speed === null ? $this->speed : $speed);
     }
 
@@ -199,11 +177,8 @@ class Tibanna
      * A second parameter can be passed to change the speed after the jump.
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
      * or an interval (DateInterval/CarbonInterval).
-     *
-     * @param string|float|DateInterval $duration
-     * @param float|null                $speed
      */
-    public function elapse($duration, ?float $speed = null): void
+    public function elapse(string|int|float|DateInterval $duration, ?float $speed = null): void
     {
         $this->callDurationMethodAndJump('add', $duration, $speed);
     }
@@ -213,11 +188,8 @@ class Tibanna
      * A second parameter can be passed to change the speed after the jump.
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
      * or an interval (DateInterval/CarbonInterval).
-     *
-     * @param string|int|float|DateInterval $duration
-     * @param float|null                    $speed
      */
-    public function rewind($duration, ?float $speed = null): void
+    public function rewind(string|int|float|DateInterval  $duration, ?float $speed = null): void
     {
         $this->callDurationMethodAndJump('sub', $duration, $speed);
     }
@@ -242,10 +214,8 @@ class Tibanna
      * This is a very low-level feature used for the internal unit tests of Carbonite and you
      * probably won't need this method in your own code and tests, you more likely need the
      * freeze() or jumpTo() method.
-     *
-     * @param string|CarbonInterface|Closure|null $testNow
      */
-    public function mock($testNow): void
+    public function mock(string|CarbonInterface|Closure|null $testNow): void
     {
         if ($testNow instanceof Closure) {
             $this->testNow = function (CarbonInterface $realNow) use ($testNow) {
@@ -265,13 +235,8 @@ class Tibanna
      * speed once it's done, rather it succeeded or threw an error or an exception.
      *
      * Returns the value returned by the given $action.
-     *
-     * @param string|DateTimeInterface|DatePeriod|DateInterval $testNow
-     * @param callable                                         $action
-     *
-     * @return mixed
      */
-    public function do($testNow, callable $action)
+    public function do(string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $testNow, callable $action): mixed
     {
         $clock = self::callStaticMethodIfAvailable(Clock::class, 'get');
         $initialSpeed = $this->speed;
@@ -343,7 +308,7 @@ class Tibanna
      *
      * @param Closure|CarbonInterface|string|null $testNow real or mock Carbon instance
      */
-    protected function setTestNow($testNow = null): void
+    protected function setTestNow(Closure|CarbonInterface|string|null $testNow = null): void
     {
         $factory = $this->getDefaultClock();
 
@@ -375,13 +340,12 @@ class Tibanna
 
     /**
      * Call a duration method and jump to resulted date.
-     *
-     * @param string                        $method
-     * @param string|int|float|DateInterval $duration
-     * @param float|null                    $speed
      */
-    private function callDurationMethodAndJump(string $method, $duration, float $speed = null): void
-    {
+    private function callDurationMethodAndJump(
+        string $method,
+        string|int|float|DateInterval $duration,
+        ?float $speed = null,
+    ): void {
         if (is_int($duration) || is_float($duration)) {
             $duration = "$duration seconds";
         }
@@ -391,11 +355,8 @@ class Tibanna
 
     /**
      * @param class-string  $class
-     * @param Closure|array $parameters
-     *
-     * @return mixed
      */
-    private function callStaticMethodIfAvailable(string $class, string $method, $parameters = [])
+    private function callStaticMethodIfAvailable(string $class, string $method, Closure|array $parameters = []): mixed
     {
         if (class_exists($class) && method_exists($class, $method)) {
             return $class::$method(...(is_array($parameters) ? $parameters : $parameters()));

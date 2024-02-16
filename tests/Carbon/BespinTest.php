@@ -15,33 +15,18 @@ use Carbon\Carbonite\Attribute\Speed;
 use Carbon\Carbonite\Attribute\UpInterface;
 use Carbon\Carbonite\{Attribute\Freeze as Froze};
 // @codingStandardsIgnoreEnd
+use Carbon\Carbonite\ReflectionCallable;
+use Carbon\Carbonite\ReflectionTestCallable;
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @covers \Carbon\Bespin::up
- * @covers \Carbon\Bespin::down
- * @covers \Carbon\Bespin::test
- * @covers \Carbon\Carbonite\Attribute\Freeze::__construct
- * @covers \Carbon\Carbonite\Attribute\Freeze::up
- * @covers \Carbon\Carbonite\Attribute\JumpTo::__construct
- * @covers \Carbon\Carbonite\Attribute\JumpTo::up
- * @covers \Carbon\Carbonite\Attribute\Speed::__construct
- * @covers \Carbon\Carbonite\Attribute\Speed::up
- * @covers \Carbon\Carbonite\ReflectionCallable::__construct
- * @covers \Carbon\Carbonite\ReflectionCallable::getAttributes
- * @covers \Carbon\Carbonite\ReflectionCallable::getDocComment
- * @covers \Carbon\Carbonite\ReflectionCallable::getFileContent
- * @covers \Carbon\Carbonite\ReflectionCallable::getSource
- * @covers \Carbon\Carbonite\ReflectionTestCallable::fromTestCase
- * @covers \Carbon\Carbonite\ReflectionTestCallable::getUps
- * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAttributes
- * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAnnotations
- * @covers \Carbon\Carbonite\ReflectionTestCallable::getUpAnnotationInstance
- * @covers \Carbon\Carbonite\ReflectionTestCallable::getTypeFullQualifiedName
- * @covers \Carbon\Carbonite\ReflectionTestCallable::getImportFromGroups
- * @covers \Carbon\Carbonite\ReflectionTestCallable::parseGroupedImports
- */
+#[CoversClass(Bespin::class)]
+#[CoversClass(Freeze::class)]
+#[CoversClass(JumpTo::class)]
+#[CoversClass(Speed::class)]
+#[CoversClass(ReflectionCallable::class)]
+#[CoversClass(ReflectionTestCallable::class)]
 class BespinTest extends TestCase
 {
     use BespinTimeMocking;
