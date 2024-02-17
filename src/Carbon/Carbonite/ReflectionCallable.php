@@ -4,23 +4,17 @@ declare(strict_types=1);
 
 namespace Carbon\Carbonite;
 
-use Carbon\Carbonite\Attribute\Freeze;
-use Carbon\Carbonite\Attribute\JumpTo;
-use Carbon\Carbonite\Attribute\Speed;
 use Closure;
 use InvalidArgumentException;
-use ReflectionAttribute;
 use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
 
 class ReflectionCallable
 {
-    /** @var ReflectionMethod|null */
-    protected $method = null;
+    protected ?ReflectionMethod $method = null;
 
-    /** @var ReflectionFunction|null */
-    protected $function = null;
+    protected ?ReflectionFunction $function = null;
 
     /**
      * @param object|array|string $test
@@ -29,7 +23,7 @@ class ReflectionCallable
      *
      * @suppress PhanUndeclaredMethod
      */
-    public function __construct($test)
+    public function __construct(object|array|string $test)
     {
         try {
             $this->function = $test instanceof Closure || is_string($test) ? new ReflectionFunction($test) : null;
@@ -52,54 +46,25 @@ class ReflectionCallable
     }
 
     /**
-     * @return ReflectionMethod|ReflectionFunction
-     *
      * @psalm-suppress NullableReturnStatement, InvalidNullableReturnType
      *
      * @suppress PhanTypeMismatchReturnNullable
      */
-    public function getSource(): object
+    public function getSource(): ReflectionMethod|ReflectionFunction
     {
         return $this->method ?? $this->function;
     }
 
-    public function getDocComment(): string
-    {
-        return (string) $this->getSource()->getDocComment();
-    }
-
-    public function getFileContent(): string
-    {
-        $file = (string) $this->getSource()->getFileName();
-        $contents = $file !== '' ? ((string) @file_get_contents($file)) : '';
-
-        return $contents !== ''
-            ? $contents
-            : implode("\n", array_map(function (string $className): string {
-                return "use $className;";
-            }, [Freeze::class, Speed::class, JumpTo::class]));
-    }
-
-    /** @return iterable<ReflectionAttribute> */
-    public function getAttributes(): iterable
-    {
-        $source = $this->getSource();
-
-        if (method_exists($source, 'getAttributes')) {
-            foreach ($source->getAttributes() as $attribute) {
-                yield $attribute;
-            }
-        }
-    }
-
     /**
+     * @param object|array|string $test
+     *
      * @suppress PhanUndeclaredMethod
      *
      * @psalm-suppress MoreSpecificReturnType, LessSpecificReturnStatement
      *
-     * @return array{object|string, string|null}
+     * @return array{object|class-string, string|null}
      */
-    private function getReflectionMethodParameters($test): array
+    private function getReflectionMethodParameters(object|array|string $test): array
     {
         if (is_array($test)) {
             if ($test === []) {

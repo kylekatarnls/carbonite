@@ -21,10 +21,9 @@ use Traversable;
 final class DataGroup implements IteratorAggregate
 {
     /** @var iterable<UpInterface|string|DateTimeInterface|ClockInterface|list<UpInterface|string|DateTimeInterface|ClockInterface>> */
-    private $timeConfigs;
+    private iterable $timeConfigs;
 
-    /** @var iterable */
-    private $dataSets;
+    private iterable $dataSets;
 
     /**
      * Return dataset with each line with time mocked by the given time config (Freeze by default, but can also
@@ -47,7 +46,7 @@ final class DataGroup implements IteratorAggregate
      * @param UpInterface|string|DateTimeInterface|ClockInterface|list<UpInterface|string|DateTimeInterface|ClockInterface> $timeConfig
      */
     public static function for(
-        $timeConfig,
+        UpInterface|string|DateTimeInterface|ClockInterface|array $timeConfig,
         iterable $dataSets
     ): self {
         return new self([$timeConfig], $dataSets);
@@ -55,18 +54,15 @@ final class DataGroup implements IteratorAggregate
 
     /**
      * Return dataset with each line frozen with a date-time randomly picked between given min and max.
-     *
-     * @psalm-suppress RedundantCastGivenDocblockType
-     *
-     * @param DatePeriod|DateInterval|DateTimeInterface|string|null $min
-     * @param DatePeriod|DateInterval|DateTimeInterface|string|null $max
-     * @param int|iterable                                          $dataSets
      */
-    public static function between($min, $max, $dataSets): self
-    {
+    public static function between(
+        DatePeriod|DateInterval|DateTimeInterface|string|null $min,
+        DatePeriod|DateInterval|DateTimeInterface|string|null $max,
+        int|iterable $dataSets,
+    ): self {
         return self::for(
             RandomClock::between($min, $max),
-            is_iterable($dataSets) ? $dataSets : range(1, (int) $dataSets)
+            is_int($dataSets) ? range(1, $dataSets) : $dataSets,
         );
     }
 
@@ -93,9 +89,9 @@ final class DataGroup implements IteratorAggregate
      */
     public static function withVariousDates(
         iterable $dataSets = [[]],
-        $timeZone = null,
+        DateTimeZone|array|string|null $timeZone = null,
         array $dates = [],
-        array $times = []
+        array $times = [],
     ): self {
         $timeZones = is_array($timeZone) ? array_values($timeZone) : [$timeZone];
         $tz = self::createTimeZone($timeZones[0] ?? null);

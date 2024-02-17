@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Carbon;
 
 use Carbon\BespinTimeMocking;
+use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -16,27 +17,20 @@ class BespinTimeMockingTest extends TestCase
         ob_start();
         $testSpeed = $this->getNumberOfAssertionsPerformed('testSpeed');
         $testFreezeAttribute = $this->getNumberOfAssertionsPerformed('testFreezeAttribute');
-        $testFreezeAnnotation = $this->getNumberOfAssertionsPerformed('testFreezeAnnotation');
         ob_end_clean();
 
         self::assertSame(1, $testSpeed);
         self::assertSame(1, $testFreezeAttribute);
-        self::assertSame(1, $testFreezeAnnotation);
     }
 
     private function getNumberOfAssertionsPerformed(string $method): int
     {
+        Assert::resetCount();
         $test = new BasicTest($method);
-        $run = $test->run();
+        $test->runBare();
+        $test->addToAssertionCount(Assert::getCount());
+        Assert::resetCount();
 
-        if (method_exists($test, 'numberOfAssertionsPerformed')) {
-            return $test->numberOfAssertionsPerformed();
-        }
-
-        if (method_exists($run, 'count')) {
-            return $run->count();
-        }
-
-        return $test->getNumAssertions();
+        return $test->numberOfAssertionsPerformed();
     }
 }

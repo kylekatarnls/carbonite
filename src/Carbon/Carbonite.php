@@ -12,7 +12,7 @@ use DatePeriod;
 use DateTimeInterface;
 use Psr\Clock\ClockInterface;
 
-class Carbonite
+final class Carbonite
 {
     /**
      * The Tibanna instance is our singleton instance because any time action with the Carbonite
@@ -106,7 +106,7 @@ class Carbonite
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
      * or an interval (DateInterval/CarbonInterval).
      */
-    public static function elapse(string|int|float|DateInterval  $duration, ?float $speed = null): void
+    public static function elapse(string|int|float|DateInterval $duration, ?float $speed = null): void
     {
         self::tibanna()->elapse($duration, $speed);
     }
@@ -165,7 +165,7 @@ class Carbonite
      * probably won't need this method in your own code and tests, you more likely need the
      * freeze() or jumpTo() method.
      */
-    public static function mock(string|CarbonInterface|Closure|null $testNow): void
+    public static function mock(string|DateTimeInterface|Closure|null $testNow): void
     {
         self::tibanna()->mock($testNow);
     }
@@ -193,6 +193,6 @@ class Carbonite
      */
     public static function getClock(): FactoryImmutable
     {
-        return self::tibanna()->getClock();
+        return FactoryImmutable::getDefaultInstance();
     }
 }

@@ -12,8 +12,7 @@ use Carbon\Carbonite;
 #[Attribute]
 class Speed implements UpInterface
 {
-    /** @var ?float */
-    private $speed;
+    private ?float $speed;
 
     public function __construct(?float $speed = null)
     {

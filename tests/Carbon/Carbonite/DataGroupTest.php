@@ -66,11 +66,11 @@ class DataGroupTest extends TestCase
         self::assertCount(84, $group);
         self::assertEquals(
             [3, new Freeze('2024-01-01 00:00')],
-            $group['Freeze(2024-01-01 00:00) three']
+            $group['Freeze(2024-01-01 00:00) three'],
         );
         self::assertEquals(
             [6, new Freeze('2024-06-15 23:59:59.999999')],
-            $group['Freeze(2024-06-15 23:59:59.999999) six']
+            $group['Freeze(2024-06-15 23:59:59.999999) six'],
         );
 
         $group = iterator_to_array(DataGroup::withVariousDates(['three' => 3, 'six' => 6], 'UTC'));
@@ -78,11 +78,11 @@ class DataGroupTest extends TestCase
         self::assertCount(84, $group);
         self::assertEquals(
             [3, new Freeze('2024-01-01 00:00 UTC')],
-            $group['Freeze(2024-01-01 00:00 UTC) three']
+            $group['Freeze(2024-01-01 00:00 UTC) three'],
         );
         self::assertEquals(
             [6, new Freeze('2024-06-15 23:59:59.999999 UTC')],
-            $group['Freeze(2024-06-15 23:59:59.999999 UTC) six']
+            $group['Freeze(2024-06-15 23:59:59.999999 UTC) six'],
         );
 
         $group = iterator_to_array(DataGroup::withVariousDates(['three' => 3, 'six' => 6], 'Pacific/Auckland'));
@@ -90,41 +90,41 @@ class DataGroupTest extends TestCase
         self::assertCount(84, $group);
         self::assertEquals(
             [3, new Freeze('2024-01-01 00:00 Pacific/Auckland')],
-            $group['Freeze(2024-01-01 00:00 Pacific/Auckland) three']
+            $group['Freeze(2024-01-01 00:00 Pacific/Auckland) three'],
         );
         self::assertEquals(
             [6, new Freeze('2024-06-15 23:59:59.999999 Pacific/Auckland')],
-            $group['Freeze(2024-06-15 23:59:59.999999 Pacific/Auckland) six']
+            $group['Freeze(2024-06-15 23:59:59.999999 Pacific/Auckland) six'],
         );
 
         $group = iterator_to_array(DataGroup::withVariousDates(
             ['three' => 3, 'six' => 6],
-            [new DateTimeZone('Pacific/Auckland'), '']
+            [new DateTimeZone('Pacific/Auckland'), ''],
         ));
 
         self::assertCount(168, $group);
         self::assertEquals(
             [3, new Freeze('2024-01-01 00:00')],
-            $group['Freeze(2024-01-01 00:00) three']
+            $group['Freeze(2024-01-01 00:00) three'],
         );
         self::assertEquals(
             [6, new Freeze('2024-06-15 23:59:59.999999 Pacific/Auckland')],
-            $group['Freeze(2024-06-15 23:59:59.999999 Pacific/Auckland) six']
+            $group['Freeze(2024-06-15 23:59:59.999999 Pacific/Auckland) six'],
         );
 
         $group = iterator_to_array(DataGroup::withVariousDates(
             ['three' => 3, 'six' => 6],
-            ''
+            '',
         ));
 
         self::assertCount(84, $group);
         self::assertEquals(
             [3, new Freeze('2024-01-01 00:00')],
-            $group['Freeze(2024-01-01 00:00) three']
+            $group['Freeze(2024-01-01 00:00) three'],
         );
         self::assertEquals(
             [6, new Freeze('2024-06-15 23:59:59.999999')],
-            $group['Freeze(2024-06-15 23:59:59.999999) six']
+            $group['Freeze(2024-06-15 23:59:59.999999) six'],
         );
     }
 

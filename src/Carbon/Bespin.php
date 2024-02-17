@@ -6,12 +6,9 @@ namespace Carbon;
 
 use Carbon\Carbonite\ReflectionTestCallable;
 
-class Bespin
+final class Bespin
 {
-    /**
-     * @param object|callable|string $test
-     */
-    public static function up($test): void
+    public static function up(object|callable|string $test): void
     {
         $method = ReflectionTestCallable::fromTestCase($test);
         $count = 0;
@@ -32,16 +29,20 @@ class Bespin
     }
 
     /**
-     * @param callable $test
+     * @template T
      *
-     * @return mixed
+     * @param callable(): T $test
+     *
+     * @return T
      */
-    public static function test(callable $test)
+    public static function test(callable $test): mixed
     {
-        static::up($test);
-        $result = $test();
-        static::down();
+        self::up($test);
 
-        return $result;
+        try {
+            return $test();
+        } finally {
+            self::down();
+        }
     }
 }

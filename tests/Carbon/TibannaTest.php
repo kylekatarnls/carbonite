@@ -20,14 +20,17 @@ class TibannaTest extends TestCase
 
     public function testCallStaticMethodIfAvailable(): void
     {
-        $method = new ReflectionMethod(Tibanna::class, 'callStaticMethodIfAvailable');
-        $method->setAccessible(true);
+        $method = new ReflectionMethod(Tibanna::class, 'callIfAvailable');
 
-        $date = $method->invoke(new Tibanna(), Carbon::class, 'parse', ['2000-01-01 00:00:00']);
+        $date = $method->invoke(new Tibanna(), Carbon::parse(...), ['2000-01-01 00:00:00']);
 
         self::assertSame('2000-01-01 00:00:00', $date->format('Y-m-d H:i:s'));
 
-        $result = $method->invoke(new Tibanna(), DateTimeImmutable::class, 'doesNotExist');
+        $result = $method->invoke(new Tibanna(), [DateTimeImmutable::class, 'doesNotExist']);
+
+        self::assertNull($result);
+
+        $result = $method->invoke(new Tibanna(), [DoesNotExist::class, 'foobar']);
 
         self::assertNull($result);
     }
@@ -71,11 +74,5 @@ class TibannaTest extends TestCase
         $tibanna->removeSynchronizer($callback);
         $tibanna->freeze('2024-01-26 12:00');
         self::assertSame(2, $calls);
-    }
-
-    public function testGetClock(): void
-    {
-        $tibanna = new Tibanna();
-        self::assertInstanceOf(FactoryImmutable::class, $tibanna->getClock());
     }
 }

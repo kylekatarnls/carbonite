@@ -7,10 +7,7 @@ declare(strict_types=1);
 namespace Carbon\Carbonite\Attribute;
 
 use Attribute;
-use Carbon\CarbonInterface;
-use Carbon\CarbonInterval;
 use Carbon\Carbonite;
-use Carbon\CarbonPeriod;
 use DateInterval;
 use DatePeriod;
 use DateTimeInterface;
@@ -19,14 +16,13 @@ use Psr\Clock\ClockInterface;
 #[Attribute]
 class Freeze implements UpInterface
 {
-    /** @var string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval|ClockInterface */
-    private $toMoment;
-    /** @var float */
-    private $speed;
+    private string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $toMoment;
+    private float $speed;
 
-    /** @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $toMoment */
-    public function __construct($toMoment = 'now', float $speed = 0.0)
-    {
+    public function __construct(
+        string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $toMoment = 'now',
+        float $speed = 0.0,
+    ) {
         $this->toMoment = $toMoment;
         $this->speed = $speed;
     }

@@ -62,7 +62,7 @@ class ReflectionTestCallableTest extends TestCase
     public function testNullArguments(): void
     {
         self::expectExceptionObject(new InvalidArgumentException(
-            'Unable to resolve the sortId'
+            'Unable to resolve the sortId',
         ));
 
         ReflectionTestCallable::fromTestCase(null);
@@ -72,7 +72,7 @@ class ReflectionTestCallableTest extends TestCase
     {
         self::expectExceptionObject(new InvalidArgumentException(
             'Passed string cannot be resolved by reflection.',
-            0
+            0,
         ));
 
         ReflectionTestCallable::fromTestCase('does-not-exist');

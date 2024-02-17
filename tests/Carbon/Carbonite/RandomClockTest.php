@@ -29,7 +29,7 @@ class RandomClockTest extends TestCase
         $clock = RandomClock::between('2024-02-01', '2024-03-01');
         self::assertEquals(
             DataGroup::between('2024-02-01', '2024-03-01', [1, 2, 3]),
-            $clock->repeat(3)
+            $clock->repeat(3),
         );
     }
 }

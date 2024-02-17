@@ -15,7 +15,7 @@ use DateTimeInterface;
 use Psr\Clock\ClockInterface;
 use Symfony\Component\Clock\Clock;
 
-class Tibanna
+final class Tibanna
 {
     /**
      * Current base moment of the fake timeline.
@@ -189,7 +189,7 @@ class Tibanna
      * The duration can be a string like "3 days and 4 hours" a number of second (can be decimal)
      * or an interval (DateInterval/CarbonInterval).
      */
-    public function rewind(string|int|float|DateInterval  $duration, ?float $speed = null): void
+    public function rewind(string|int|float|DateInterval $duration, ?float $speed = null): void
     {
         $this->callDurationMethodAndJump('sub', $duration, $speed);
     }
@@ -215,7 +215,7 @@ class Tibanna
      * probably won't need this method in your own code and tests, you more likely need the
      * freeze() or jumpTo() method.
      */
-    public function mock(string|CarbonInterface|Closure|null $testNow): void
+    public function mock(string|DateTimeInterface|Closure|null $testNow): void
     {
         if ($testNow instanceof Closure) {
             $this->testNow = function (CarbonInterface $realNow) use ($testNow) {
@@ -236,12 +236,13 @@ class Tibanna
      *
      * Returns the value returned by the given $action.
      */
-    public function do(string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $testNow, callable $action): mixed
-    {
-        $clock = self::callStaticMethodIfAvailable(Clock::class, 'get');
+    public function do(
+        string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $testNow,
+        callable $action,
+    ): mixed {
+        $clock = self::callIfAvailable([Clock::class, 'get']);
         $initialSpeed = $this->speed;
-        $initialMutableTestNow = Carbon::getTestNow();
-        $initialImmutableTestNow = CarbonImmutable::getTestNow();
+        $initialFactoryTestNow = FactoryImmutable::getInstance()->getTestNow();
         $initialTestNow = $this->testNow;
         $initialMoment = $this->moment;
         $initialFrozenAt = $this->lastFrozenAt;
@@ -254,9 +255,8 @@ class Tibanna
             $this->testNow = $initialTestNow;
             $this->moment = $initialMoment;
             $this->lastFrozenAt = $initialFrozenAt;
-            Carbon::setTestNow($initialMutableTestNow);
-            CarbonImmutable::setTestNow($initialImmutableTestNow);
-            self::callStaticMethodIfAvailable(Clock::class, 'set', [$clock]);
+            FactoryImmutable::getInstance()->setTestNow($initialFactoryTestNow);
+            self::callIfAvailable([Clock::class, 'set'], [$clock]);
         }
     }
 
@@ -284,14 +284,6 @@ class Tibanna
     }
 
     /**
-     * Return the default \Carbon\FactoryImmutable instance.
-     */
-    public function getClock(): FactoryImmutable
-    {
-        return $this->getDefaultClock() ?? new FactoryImmutable();
-    }
-
-    /**
      * Set a Carbon and CarbonImmutable instance (real or mock) to be returned when a "now" instance
      * is created. The provided instance will be returned specifically under the following conditions:
      *   - A call to the static now() method, ex. Carbon::now()
@@ -310,28 +302,15 @@ class Tibanna
      */
     protected function setTestNow(Closure|CarbonInterface|string|null $testNow = null): void
     {
-        $factory = $this->getDefaultClock();
+        $factory = FactoryImmutable::getDefaultInstance();
 
-        Carbon::setTestNow($testNow);
+        $factory->setTestNow($testNow);
 
-        if (!$factory) {
-            CarbonImmutable::setTestNow($testNow); // @codeCoverageIgnore
-        }
-
-        $factory = $factory ?? new FactoryImmutable();
-
-        if ($factory instanceof ClockInterface) {
-            self::callStaticMethodIfAvailable(
-                Clock::class,
-                'set',
-                /**
-                 * @psalm-suppress TooManyArguments
-                 */
-                static function () use ($factory): array {
-                    return [new Clock($factory)];
-                }
-            );
-        }
+        self::callIfAvailable(
+            [Clock::class, 'set'],
+            /**  @psalm-suppress TooManyArguments */
+            static fn (): array => [new Clock($factory)],
+        );
 
         foreach ($this->synchronizers as $synchronizer) {
             $synchronizer($factory);
@@ -353,20 +332,13 @@ class Tibanna
         $this->jumpTo(Carbon::now()->$method($duration), $speed);
     }
 
-    /**
-     * @param class-string  $class
-     */
-    private function callStaticMethodIfAvailable(string $class, string $method, Closure|array $parameters = []): mixed
+    /** @param Closure|array $parameters */
+    private function callIfAvailable(mixed $maybeCallable, Closure|array $parameters = []): mixed
     {
-        if (class_exists($class) && method_exists($class, $method)) {
-            return $class::$method(...(is_array($parameters) ? $parameters : $parameters()));
+        if (is_callable($maybeCallable)) {
+            return $maybeCallable(...(is_array($parameters) ? $parameters : $parameters()));
         }
 
         return null;
-    }
-
-    private function getDefaultClock(): ?FactoryImmutable
-    {
-        return self::callStaticMethodIfAvailable(FactoryImmutable::class, 'getDefaultInstance');
     }
 }

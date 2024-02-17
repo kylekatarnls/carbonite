@@ -45,7 +45,7 @@ jobs:
         composer update --prefer-dist --no-progress ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }};
 
     - name: Coverage
-      run: vendor/bin/phpunit --display-incomplete --display-skipped --display-deprecations --display-errors --display-notices --display-warnings --coverage-clover=clover.xml
+      run: vendor/bin/phpunit --display-incomplete --display-skipped --display-deprecations --display-errors --display-notices --display-warnings --coverage-clover=clover.xml --coverage-text
 
     - name: Code Climate
       uses: paambaati/codeclimate-action@v2.7.4

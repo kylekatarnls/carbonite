@@ -23,19 +23,8 @@ use Throwable;
 class DocumentationTest extends TestCase
 {
     #[DataProvider('getReadmeExamples')]
-    public function testReadmeExamples(string $example, string $lintOnly, string $phpLevel, string $excludePhp): void
+    public function testReadmeExamples(string $example, string $lintOnly): void
     {
-        if (version_compare(PHP_VERSION, $phpLevel, '<')) {
-            self::markTestSkipped('Requires PHP '.$phpLevel);
-        }
-
-        if ($excludePhp !== ''
-            && version_compare(PHP_VERSION, $excludePhp, '>=')
-            && version_compare(PHP_VERSION, "$excludePhp.999", '<')
-        ) {
-            self::markTestSkipped('Skipping PHP level '.$excludePhp);
-        }
-
         Carbonite::mock(null);
         Carbonite::release();
 
@@ -109,7 +98,7 @@ class DocumentationTest extends TestCase
         $output = [];
 
         try {
-            $errorHandler = set_error_handler(
+            set_error_handler(
                 static function (int $severity, string $message, string $file, int $line): void {
                     if (error_reporting() & $severity) {
                         throw new ErrorException($message, 0, $severity, $file, $line);
@@ -127,7 +116,7 @@ class DocumentationTest extends TestCase
         } finally {
             ob_end_clean();
             error_reporting($level);
-            set_error_handler($errorHandler);
+            restore_error_handler();
         }
 
         if ($lintOnly) {
@@ -189,7 +178,6 @@ class DocumentationTest extends TestCase
                     foreach ($steps as $step) {
                         if (method_exists($testCase, $step)) {
                             $methodReflection = new ReflectionMethod($testCase, $step);
-                            $methodReflection->setAccessible(true);
                             $methodReflection->invoke($methodTester);
                         }
                     }
@@ -219,15 +207,11 @@ class DocumentationTest extends TestCase
             $previousLine = trim(array_slice($previousLines, -2)[0] ?? '');
             $code = trim(str_replace("\r", '', $example));
             $lintOnly = '';
-            $phpLevel = '7.2';
-            $excludePhp = '';
 
             if (preg_match('/^<i.+><\/i>$/', $previousLine)) {
                 $infoTag = new SimpleXMLElement($previousLine);
                 $lintOnly = (string) ($infoTag['lint-only'] ?? '');
                 $codeId = (string) ($infoTag['code-id'] ?? '');
-                $phpLevel = (string) ($infoTag['php-level'] ?? '7.2');
-                $excludePhp = (string) ($infoTag['exclude-php'] ?? '');
 
                 if ($codeId !== '') {
                     $codes[$codeId] = $code;
@@ -246,7 +230,7 @@ class DocumentationTest extends TestCase
                 }
             }
 
-            yield [$code, $lintOnly, $phpLevel, $excludePhp];
+            yield [$code, $lintOnly];
         }
     }
 }

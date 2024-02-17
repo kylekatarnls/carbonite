@@ -73,7 +73,7 @@ class ReflectionCallableTest extends TestCase
     {
         self::expectExceptionObject(new InvalidArgumentException(
             'Passed empty array cannot be resolved by reflection.',
-            1
+            1,
         ));
 
         new ReflectionCallable([]);

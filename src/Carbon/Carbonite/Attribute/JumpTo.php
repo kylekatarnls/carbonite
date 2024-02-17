@@ -7,25 +7,22 @@ declare(strict_types=1);
 namespace Carbon\Carbonite\Attribute;
 
 use Attribute;
-use Carbon\CarbonInterface;
-use Carbon\CarbonInterval;
 use Carbon\Carbonite;
-use Carbon\CarbonPeriod;
 use DateInterval;
 use DatePeriod;
 use DateTimeInterface;
+use Psr\Clock\ClockInterface;
 
 #[Attribute]
 class JumpTo implements UpInterface
 {
-    /** @var string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval */
-    private $moment;
-    /** @var ?float */
-    private $speed;
+    private string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $moment;
+    private ?float $speed;
 
-    /** @param string|CarbonInterface|CarbonPeriod|CarbonInterval|DateTimeInterface|DatePeriod|DateInterval $moment */
-    public function __construct($moment, ?float $speed = null)
-    {
+    public function __construct(
+        string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $moment,
+        ?float $speed = null,
+    ) {
         $this->moment = $moment;
         $this->speed = $speed;
     }

@@ -9,6 +9,7 @@ use InvalidArgumentException;
 
 final class ReflectionTestCallable extends ReflectionCallable
 {
+    /** @var object|array|string|null */
     private object|array|string|null $test = null;
 
     public static function fromTestCase($test): self
@@ -21,7 +22,7 @@ final class ReflectionTestCallable extends ReflectionCallable
 
         try {
             $instance = new self($sortId);
-        } catch (InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException) {
             $instance = new self($test);
         }
 
@@ -39,10 +40,14 @@ final class ReflectionTestCallable extends ReflectionCallable
         yield from $this->getDataProvided();
     }
 
-    /** @return iterable<UpInterface> */
+    /**
+     * @psalm-suppress MoreSpecificReturnType
+     *
+     * @return iterable<UpInterface>
+     */
     public function getUpAttributes(): iterable
     {
-        foreach ($this->getAttributes() as $attribute) {
+        foreach ($this->getSource()->getAttributes() as $attribute) {
             if (is_a($attribute->getName(), UpInterface::class, true)) {
                 yield $attribute->newInstance();
             }
