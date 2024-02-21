@@ -17,15 +17,13 @@ use Psr\Clock\ClockInterface;
  */
 final class RandomClock implements ClockInterface
 {
-    private $min;
-    private $diffInMicroSeconds;
+    private CarbonImmutable $min;
+    private float $diffInMicroSeconds;
 
-    /**
-     * @param DatePeriod|DateInterval|DateTimeInterface|string|null $min
-     * @param DatePeriod|DateInterval|DateTimeInterface|string|null $max
-     */
-    public function __construct($min, $max)
-    {
+    public function __construct(
+        DatePeriod|DateInterval|DateTimeInterface|string|null $min,
+        DatePeriod|DateInterval|DateTimeInterface|string|null $max,
+    ) {
         $now = CarbonImmutable::now();
         $this->min = $now->carbonize($min);
         $this->diffInMicroSeconds = $this->min->diffInMicroseconds($now->carbonize($max));
@@ -34,18 +32,19 @@ final class RandomClock implements ClockInterface
     /**
      * Creates a clock that returns a random date every time ->now() is called and pick it between
      * the given $min and $max parameters.
-     *
-     * @param DatePeriod|DateInterval|DateTimeInterface|string|null $min
-     * @param DatePeriod|DateInterval|DateTimeInterface|string|null $max
      */
-    public static function between($min, $max): self
-    {
+    public static function between(
+        DatePeriod|DateInterval|DateTimeInterface|string|null $min,
+        DatePeriod|DateInterval|DateTimeInterface|string|null $max,
+    ): self {
         return new self($min, $max);
     }
 
     /**
      * Return a random date every time ->now() is called and pick it between
      * the given $min and $max parameters of the clock.
+     *
+     * @return CarbonImmutable
      */
     public function now(): DateTimeImmutable
     {

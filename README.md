@@ -6,7 +6,7 @@ You can use it with any PSR-compatible clock system and framework
 or with any time mocking system.
 
 [![Latest Stable Version](https://poser.pugx.org/kylekatarnls/carbonite/v/stable.png)](https://packagist.org/packages/kylekatarnls/carbonite)
-[![GitHub Actions](https://github.com/kylekatarnls/carbonite/workflows/Tests/badge.svg)](https://github.com/kylekatarnls/carbonite/actions)
+[![GitHub Actions](https://github.com/kylekatarnls/carbonite/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/kylekatarnls/carbonite/actions)
 [![Code Climate](https://codeclimate.com/github/kylekatarnls/carbonite/badges/gpa.svg)](https://codeclimate.com/github/kylekatarnls/carbonite)
 [![Test Coverage](https://codeclimate.com/github/kylekatarnls/carbonite/badges/coverage.svg)](https://codeclimate.com/github/kylekatarnls/carbonite/coverage)
 [![Issue Count](https://codeclimate.com/github/kylekatarnls/carbonite/badges/issue_count.svg)](https://codeclimate.com/github/kylekatarnls/carbonite)
@@ -24,6 +24,21 @@ composer require --dev kylekatarnls/carbonite
 
 We install Carbonite with `--dev` because it's designed for tests. You watched enough Sci-Fi movies to know time travel
 paradoxes are too dangerous for production.
+
+If your config matches the requirements:
+- PHP >= 8.2
+- Carbon >= 3.0.2
+
+It will install the latest version of this package, if you need to support older
+PHP versions (up to 7.2), Carbon 2, or to use annotations over attributes, then
+install the version 1.x:
+
+```shell
+composer require --dev kylekatarnls/carbonite:^1
+```
+
+Then you can browse the corresponding
+[Carbonite v1 documentation](https://github.com/kylekatarnls/carbonite/tree/1.x).
 
 ## Usage
 
@@ -106,13 +121,13 @@ $now = Carbon::now()->addSecond();
 echo (int) Carbon::now()->diffInSeconds($now); // output: 0
 
 // because first Carbon::now() is a few microseconds before the second one,
-// so the final diff is a bit less than 1 second
+// so the final diff is a bit less than 1 second (for example 0.999262)
 
 Carbonite::freeze();
 
 $now = Carbon::now()->addSecond();
 
-echo (int) Carbon::now()->diffInSeconds($now); // output: 1
+echo Carbon::now()->diffInSeconds($now); // output: 1
 
 // Time is frozen so the whole thing behaves as if it was instantaneous
 ```
@@ -472,11 +487,11 @@ class MyProjectTest extends TestCase
 }
 ```
 
-PHP 8 attributes (or PHPDoc annotations for PHP 7) can also be used for
+PHP 8 attributes can also be used for
 convenience. Enable it using `BespinTimeMocking` trait or `Bespin::up()`
 on a given test suite:
 
-### PHP 8
+### PHP Attributes
 ```php
 use Carbon\BespinTimeMocking;
 use Carbon\Carbon;
@@ -527,59 +542,8 @@ class PHP8Test extends TestCase
 }
 ```
 
-### PHP 7
-```php
-use Carbon\BespinTimeMocking;
-use Carbon\Carbon;
-use Carbon\Carbonite;
-use Carbon\Carbonite\Attribute\Freeze;
-use Carbon\Carbonite\Attribute\JumpTo;
-use Carbon\Carbonite\Attribute\Speed;
-use PHPUnit\Framework\TestCase;
-
-class PHP7Test extends TestCase
-{
-    // Will handle attributes on each method before running it
-    // and release the time after each test
-    use BespinTimeMocking;
-
-    /** @Freeze("2019-12-25") */
-    public function testChristmas()
-    {
-        // Here we are the 2019-12-25, time is frozen.
-        self::assertSame('12-25', Carbon::now()->format('m-d'));
-        self::assertSame(0.0, Carbonite::speed());
-    }
-
-    /** @JumpTo("2021-01-01") */
-    public function testJanuaryFirst()
-    {
-        // Here we are the 2021-01-01, but time is NOT frozen.
-        self::assertSame('01-01', Carbon::now()->format('m-d'));
-        self::assertSame(1.0, Carbonite::speed());
-    }
-
-    /** @Speed(10) */
-    public function testSpeed()
-    {
-        // Here we start from the real date-time, but during
-        // the test, time elapse 10 times faster.
-        self::assertSame(10.0, Carbonite::speed());
-    }
-
-    /** @Release() */
-    public function testRelease()
-    {
-        // If no annotations have been used, Bespin::up() will use:
-        // Carbonite::freeze('now')
-        // But you can still use @Release() to get a test with
-        // real time
-    }
-}
-```
-
-Annotations also work with multiline blocks, so you (with both PHPDoc or attributes)
-have in the same test a `@group`, `@dataProvider` or whatever.
+See [Carbonite v1 documentation](https://github.com/kylekatarnls/carbonite/tree/1.x?tab=readme-ov-file#php-7)
+for annotations support.
 
 ## `fakeAsync()` for PHP
 
@@ -622,7 +586,7 @@ TestCase and using `#[DataProvider]`, `@dataProvider`,
 `JumpTo`, `Release` or `Speed`, they will be used to
 configure time mocking before starting the test then
 removed from the passed parameters:
-<i lint-only="in-class" exclude-php="8.0"></i>
+<i lint-only="in-class"></i>
 ```php
 #[TestWith([new Freeze('2024-05-25'), '2024-05-24'])]
 #[TestWith([new Freeze('2023-01-01'), '2022-12-31'])]
@@ -648,7 +612,7 @@ public static function getDataSet(): array
 
 You can combine it with periods, for instance to test that
 something works every day of the month:
-<i lint-only="in-class" php-level="7.4"></i>
+<i lint-only="in-class"></i>
 ```php
 #[DataProvider('getDataSet')]
 public function testDataProvider(): void
@@ -815,7 +779,7 @@ public static function getDataSet(): DataGroup
 You can create your own time mocking attributes implementing
 `UpInterface`:
 
-<i lint-only="1" php-level="8.0"></i>
+<i lint-only="1"></i>
 ```php
 use Carbon\Carbonite;
 use Carbon\Carbonite\Attribute\UpInterface;

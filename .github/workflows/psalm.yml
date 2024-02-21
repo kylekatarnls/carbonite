@@ -1,0 +1,47 @@
+name: Psalm
+
+on:
+  push:
+    branches: [ '**' ]
+  pull_request:
+    branches: [ '**' ]
+
+jobs:
+  style:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [8.3]
+        setup: ['stable']
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ast, json
+          tools: composer:v2
+          coverage: none
+
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v2
+        with:
+          path: vendor
+          key: ${{ runner.os }}-psalm-${{ matrix.php }}-${{ matrix.setup }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-psalm-${{ matrix.php }}-${{ matrix.setup }}-
+
+      - name: Install dependencies
+        if: steps.composer-cache.outputs.cache-hit != 'true'
+        run: |
+          composer remove --no-update friendsofphp/php-cs-fixer phpstan/phpstan phan/phan phpunit/phpunit phpmd/phpmd squizlabs/php_codesniffer --dev --no-interaction;
+          composer require --no-update "vimeo/psalm:^5.22.0" --dev --no-interaction;
+          composer update --prefer-dist --no-progress ${{ matrix.setup != 'next' && format('--prefer-{0}', matrix.setup) || '' }}
+
+      - name: Check style
+        run: composer psalm

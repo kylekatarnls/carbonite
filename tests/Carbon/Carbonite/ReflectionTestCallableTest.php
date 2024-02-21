@@ -8,17 +8,12 @@ use Carbon\Carbonite\Attribute\Freeze;
 use Carbon\Carbonite\Attribute\Speed;
 use Carbon\Carbonite\ReflectionTestCallable;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @coversDefaultClass \Carbon\Carbonite\ReflectionTestCallable
- */
+#[CoversClass(ReflectionTestCallable::class)]
 class ReflectionTestCallableTest extends TestCase
 {
-    /**
-     * @covers ::getDataProvided
-     * @covers ::getTestProvidedData
-     */
     public function testEmptytDataProvided(): void
     {
         $obj = new class() {
@@ -32,10 +27,6 @@ class ReflectionTestCallableTest extends TestCase
         self::assertSame([], iterator_to_array($callable->getDataProvided()));
     }
 
-    /**
-     * @covers ::getDataProvided
-     * @covers ::getTestProvidedData
-     */
     public function testGetDataProvided(): void
     {
         $freeze = new Freeze('2020');
@@ -68,38 +59,25 @@ class ReflectionTestCallableTest extends TestCase
         self::assertSame([$freeze, $speed], iterator_to_array($callable->getDataProvided()));
     }
 
-    /**
-     * @covers ::__construct
-     * @covers ::fromTestCase
-     * @covers ::getSortId
-     */
     public function testNullArguments(): void
     {
         self::expectExceptionObject(new InvalidArgumentException(
-            'Unable to resolve the sortId'
+            'Unable to resolve the sortId',
         ));
 
         ReflectionTestCallable::fromTestCase(null);
     }
 
-    /**
-     * @covers ::__construct
-     * @covers ::fromTestCase
-     * @covers ::getSortId
-     */
     public function testInvalidArguments(): void
     {
         self::expectExceptionObject(new InvalidArgumentException(
             'Passed string cannot be resolved by reflection.',
-            0
+            0,
         ));
 
         ReflectionTestCallable::fromTestCase('does-not-exist');
     }
 
-    /**
-     * @covers ::getSortId
-     */
     public function testSortId(): void
     {
         $obj = new class() {
