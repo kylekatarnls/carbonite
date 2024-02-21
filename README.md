@@ -38,7 +38,7 @@ composer require --dev kylekatarnls/carbonite:^1
 ```
 
 Then you can browse the corresponding
-[Carbonite v1 documentation](https://github.com/kylekatarnls/carbonite/tree/1.x).
+[Carbonite v1 documentation](https://github.com/kylekatarnls/carbonite/tree/1.x?tab=readme-ov-file#usage).
 
 ## Usage
 
