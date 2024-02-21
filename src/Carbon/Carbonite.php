@@ -193,6 +193,6 @@ final class Carbonite
      */
     public static function getClock(): FactoryImmutable
     {
-        return FactoryImmutable::getDefaultInstance();
+        return self::tibanna()->getClock();
     }
 }

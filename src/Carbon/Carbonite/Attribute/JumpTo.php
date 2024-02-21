@@ -14,17 +14,12 @@ use DateTimeInterface;
 use Psr\Clock\ClockInterface;
 
 #[Attribute]
-class JumpTo implements UpInterface
+readonly class JumpTo implements UpInterface
 {
-    private string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $moment;
-    private ?float $speed;
-
     public function __construct(
-        string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $moment,
-        ?float $speed = null,
+        private string|DateTimeInterface|DatePeriod|DateInterval|ClockInterface $moment,
+        private ?float $speed = null,
     ) {
-        $this->moment = $moment;
-        $this->speed = $speed;
     }
 
     public function up(): void

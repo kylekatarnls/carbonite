@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Carbon\Carbonite;
 
 use Carbon\Carbon;
-use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Carbon\FactoryImmutable;
 use Closure;
@@ -242,7 +241,8 @@ final class Tibanna
     ): mixed {
         $clock = self::callIfAvailable([Clock::class, 'get']);
         $initialSpeed = $this->speed;
-        $initialFactoryTestNow = FactoryImmutable::getInstance()->getTestNow();
+        $factory = $this->getClock();
+        $initialFactoryTestNow = $factory->getTestNow();
         $initialTestNow = $this->testNow;
         $initialMoment = $this->moment;
         $initialFrozenAt = $this->lastFrozenAt;
@@ -255,7 +255,7 @@ final class Tibanna
             $this->testNow = $initialTestNow;
             $this->moment = $initialMoment;
             $this->lastFrozenAt = $initialFrozenAt;
-            FactoryImmutable::getInstance()->setTestNow($initialFactoryTestNow);
+            $factory->setTestNow($initialFactoryTestNow);
             self::callIfAvailable([Clock::class, 'set'], [$clock]);
         }
     }
@@ -284,6 +284,16 @@ final class Tibanna
     }
 
     /**
+     * Return the default \Carbon\FactoryImmutable instance.
+     *
+     * @suppress PhanAccessMethodInternal
+     */
+    public function getClock(): FactoryImmutable
+    {
+        return FactoryImmutable::getDefaultInstance();
+    }
+
+    /**
      * Set a Carbon and CarbonImmutable instance (real or mock) to be returned when a "now" instance
      * is created. The provided instance will be returned specifically under the following conditions:
      *   - A call to the static now() method, ex. Carbon::now()
@@ -302,7 +312,7 @@ final class Tibanna
      */
     protected function setTestNow(Closure|CarbonInterface|string|null $testNow = null): void
     {
-        $factory = FactoryImmutable::getDefaultInstance();
+        $factory = $this->getClock();
 
         $factory->setTestNow($testNow);
 

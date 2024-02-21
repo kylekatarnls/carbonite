@@ -60,7 +60,10 @@ class ReflectionCallable
      *
      * @suppress PhanUndeclaredMethod
      *
-     * @psalm-suppress MoreSpecificReturnType, LessSpecificReturnStatement
+     * @psalm-suppress MoreSpecificReturnType,
+     *                 LessSpecificReturnStatement,
+     *                 ArgumentTypeCoercion,
+     *                 PossiblyInvalidMethodCall,
      *
      * @return array{object|class-string, string|null}
      */
